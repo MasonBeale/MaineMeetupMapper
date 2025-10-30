@@ -8,13 +8,22 @@ Logan Simba | logan.simba@maine.edu
 
 Phil Lane | philip.lane@maine.edu
 
-## The Project:
-Students and community members miss valuable networking, educational, and social
-opportunities due to fragmented event information. This project aims to help students build
-better networks and socialize.
+## Phase 2
+### Tasks and deadlines:
+1. Recorded Video Demo (Nov, 13)
+2. Database schema scripts (Nov, 7)
+3. Stored procedures and functions (Nov, 10)
+4. Data scraping (Nov, 6)
+5. Sample data and data cleaning (Nov, 7)
+6. Query optimization analysis (Nov, 10)
+7. Readme (Nov, 14)
+8. Team contributions (Nov, 14)
 
-Hopefull Features:
-* Personalized event recommendations
-* Calendar integration and notifications
-* Attendance tracking and networking features
-* Event rating and review system
+### Member ID's:
+Mason
+
+Logan
+
+Phil
+
+Kristina
