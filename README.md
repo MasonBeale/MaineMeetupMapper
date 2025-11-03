@@ -28,10 +28,10 @@ Phil Lane | philip.lane@maine.edu
     * All
 
 ### Member ID's:
-Mason : MasonBeale: 1088729
+Mason : MasonBeale : 1088729
 
-Logan : 
+Logan : LoganSimba :
 
-Phil : phlane
+Phil : phlane :
 
-Kristina : kristinazbinden
+Kristina : kristinazbinden : 
