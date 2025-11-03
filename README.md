@@ -9,7 +9,7 @@ Logan Simba | logan.simba@maine.edu
 Phil Lane | philip.lane@maine.edu
 
 ## Phase 2
-### Tasks and deadlines:
+### Tasks, deadlines, and Main Contributors:
 1. Recorded Video Demo (Nov, 13)
     * Mason
 3. Database schema scripts (Nov, 7)
@@ -28,10 +28,10 @@ Phil Lane | philip.lane@maine.edu
     * All
 
 ### Member ID's:
-Mason
+Mason : MasonBeale
 
-Logan
+Logan : 
 
-Phil
+Phil : phlane
 
-Kristina
+Kristina : kristinazbinden
