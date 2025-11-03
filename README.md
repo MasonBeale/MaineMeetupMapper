@@ -11,13 +11,21 @@ Phil Lane | philip.lane@maine.edu
 ## Phase 2
 ### Tasks and deadlines:
 1. Recorded Video Demo (Nov, 13)
-2. Database schema scripts (Nov, 7)
-3. Stored procedures and functions (Nov, 10)
-4. Data scraping (Nov, 6)
-5. Sample data and data cleaning (Nov, 7)
-6. Query optimization analysis (Nov, 10)
-7. Readme (Nov, 14)
-8. Team contributions (Nov, 14)
+    * Mason
+3. Database schema scripts (Nov, 7)
+    * Phil
+5. Stored procedures and functions (Nov, 10)
+    * Kristina, Logan
+6. Data scraping (Nov, 7)
+    * Mason, Phil, Logan
+7. Sample data and data cleaning (Nov, 8)
+    * Mason, Phil, Logan
+8. Query optimization analysis (Nov, 13)
+    * Kristina
+9. Readme (Nov, 14)
+    * All
+11. Team contributions (Nov, 14)
+    * All
 
 ### Member ID's:
 Mason
