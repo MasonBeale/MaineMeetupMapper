@@ -35,3 +35,7 @@ Logan : LoganSimba
 Phil : phlane
 
 Kristina : kristinazbinden
+
+## Kristina's Contributions
+1. Ownership of User & Category Tables - CRUD for each
+2. Scraping of https://www.visitmaine.com
