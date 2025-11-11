@@ -36,6 +36,7 @@ Phil : phlane
 
 Kristina : kristinazbinden
 
-## Kristina's Contributions
+## Team Contributions
+### Kristina
 1. Ownership of User & Category Tables - CRUD for each
 2. Scraping of https://www.visitmaine.com
