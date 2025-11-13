@@ -28,3 +28,23 @@ ON Event (organizer_id);
 -- Location to query events by location
 CREATE INDEX IX_Event_LocationID
 ON Event (location_id);
+
+
+
+-- Exmaple Queries
+
+-- Get all events between January 20, 2026 and April 20, 2026
+SELECT *
+FROM Event
+WHERE event_date BETWEEN '2026-01-20' AND '2026-04-20';
+
+-- Get all events with capacity between 100-200
+SELECT *
+FROM Event
+WHERE max_capacity BETWEEN 100 AND 200;
+
+-- Get all events in Portland, Maine
+SELECT Event.*
+FROM Event
+JOIN Location ON Event.location_id = Location.location_id
+WHERE Location.city = 'Portland' AND Location.state = 'Maine';
