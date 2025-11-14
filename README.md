@@ -40,3 +40,7 @@ Kristina : kristinazbinden
 ### Kristina
 1. Ownership of User & Category Tables - CRUD for each
 2. Scraping of https://www.visitmaine.com
+
+### Mason
+1. Ownership of review & RSVP tables - CRUD and stored procedures for each
+2. Scraping https://www.meetup.com/
