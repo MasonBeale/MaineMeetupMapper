@@ -1,6 +1,7 @@
+-- just making the RSVP table
 CREATE TABLE RSVP (
-    rsvp_id INT PRIMARY KEY AUTO_INCREMENT,
-    rsvp_status ENUM('Going', 'Interested', 'Not Going') NOT NULL,
+    RSVP_id INT PRIMARY KEY AUTO_INCREMENT,
+    RSVP_status ENUM('Going', 'Interested', 'Not Going') NOT NULL,
     user_id INT NOT NULL,
     event_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES User(user_id),
