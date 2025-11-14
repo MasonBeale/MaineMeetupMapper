@@ -44,3 +44,8 @@ Kristina : kristinazbinden
 ### Mason
 1. Ownership of review & RSVP tables - CRUD and stored procedures for each
 2. Scraping https://www.meetup.com/
+
+
+### Phil
+1. Ownership of Event Table - CRUD, procedures, indexes, and query examples
+2. Scraping of https://www.mainepublic.org/
