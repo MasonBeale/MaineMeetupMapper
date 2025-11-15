@@ -14,7 +14,7 @@ CREATE PROCEDURE IF NOT EXISTS read_RSVP_by_event_id (
     p_event_id INT
 )
 BEGIN
-    SELECT * FROM review WHERE event_id = p_event_id;
+    SELECT * FROM RSVP WHERE event_id = p_event_id;
 END//
 DELIMITER ;
 

@@ -1,6 +1,6 @@
--- updates the rating and comments of an existing review by ID
+-- updates the rating and comments of an existing RSVP by ID
 DELIMITER //
-CREATE PROCEDURE IF NOT EXISTS update_review (
+CREATE PROCEDURE IF NOT EXISTS update_RSVP (
     p_review_id INT,
     p_rating INT,
     p_comments VARCHAR(300)
