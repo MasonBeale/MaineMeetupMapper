@@ -1,6 +1,6 @@
 -- adding a new review to the review table
 DELIMITER //
-CREATE PROCEDURE create_review (
+CREATE PROCEDURE IF NOT EXISTS create_review (
   p_rating INT,
   p_comments VARCHAR(300),
   p_user_id INT,

@@ -1,6 +1,6 @@
 -- adding a new RSVP to the RSVP table
 DELIMITER //
-CREATE PROCEDURE create_RSVP (
+CREATE PROCEDURE IF NOT EXISTS create_RSVP (
   p_rsvp_status ENUM('Going', 'Interested', 'Not Going'),
   p_user_id INT,
   p_event_id INT

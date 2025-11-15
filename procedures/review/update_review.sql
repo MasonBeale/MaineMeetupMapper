@@ -1,5 +1,5 @@
 -- updates the rating and comments of an existing review by ID
-CREATE PROCEDURE update_review (
+CREATE PROCEDURE IF NOT EXISTS update_review (
     p_review_id INT,
     p_rating INT,
     p_comments VARCHAR(300)

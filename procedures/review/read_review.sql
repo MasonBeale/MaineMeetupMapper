@@ -1,6 +1,6 @@
 -- gets a review by its ID
 DELIMITER //
-CREATE PROCEDURE read_review_by_id (
+CREATE PROCEDURE IF NOT EXISTS read_review_by_id (
     p_review_id INT
 )
 BEGIN
@@ -10,7 +10,7 @@ DELIMITER ;
 
 -- gets all reviews for a specific event
 DELIMITER //
-CREATE PROCEDURE read_reviews_by_event_id (
+CREATE PROCEDURE IF NOT EXISTS read_reviews_by_event_id (
     p_event_id INT
 )
 BEGIN
@@ -20,7 +20,7 @@ DELIMITER ;
 
 -- gets all reviews made by a specific user
 DELIMITER //
-CREATE PROCEDURE read_reviews_by_user_id (
+CREATE PROCEDURE IF NOT EXISTS read_reviews_by_user_id (
     p_user_id INT
 )
 BEGIN

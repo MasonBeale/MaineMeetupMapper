@@ -1,5 +1,5 @@
 -- just making the table for reviews
-CREATE TABLE review (
+CREATE TABLE IF NOT EXISTS review (
     review_id INT PRIMARY KEY AUTO_INCREMENT,
     rating INT CHECK (rating >= 1 AND rating <= 5) NOT NULL,
     comments VARCHAR(300),

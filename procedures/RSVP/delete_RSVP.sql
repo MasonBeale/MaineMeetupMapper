@@ -1,6 +1,6 @@
 -- deleting an RSVP from the RSVP table
 DELIMITER //
-CREATE PROCEDURE delete_RSVP (
+CREATE PROCEDURE IF NOT EXISTS delete_RSVP (
     p_RSVP_id INT
 )
 BEGIN

@@ -1,6 +1,6 @@
 -- delete a review by its ID
 DELIMITER //
-CREATE PROCEDURE delete_review (
+CREATE PROCEDURE IF NOT EXISTS delete_review (
     p_review_id INT
 )
 BEGIN
