@@ -38,5 +38,34 @@ Kristina : kristinazbinden
 
 ## Team Contributions
 ### Kristina
-1. Ownership of User & Category Tables - CRUD for each
-2. Scraping of https://www.visitmaine.com
+1. Ownership of User Table
+    - Create User Schema 
+        - Create, Write, Update and Delete procedures
+        - Create test cases
+
+2. Ownership of Category Table
+    - Create Category Schema 
+        - Create, Write, Update and Delete procedures
+        - Create test cases
+
+3. Scraping of [https://www.visitmaine.com](https://www.visitmaine.com)
+
+#### To test scraper -
+- Start venv with `source .venv/bin/activate`
+- `cd` into `Webscraping` and run `maine_tourism_scraper.py`
+
+#### To test tables - 
+- Start MySQL local server
+- In terminal, enter MySQL commands:
+    1. `CREATE DATABASE mmmdb;`
+    2. `USE mmmdb;`
+    3. Create tables by running:
+        - `source <your absolute path to MaineMeetupMapper/Tables/user_table.sql>;`
+        - `source <your absolute path to MaineMeetupMapper/Tables/category_table.sql>;`
+    4. Load procedures by running:
+        - `source <your absolute path to MaineMeetupMapper/Procedures/user_procedures.sql>;`
+        - `source <your absolute path to MaineMeetupMapper/Procedures/category_procedures.sql>;`
+    5. Test procedures by running:
+        - `source <your absolute path to MaineMeetupMapper/Test_Data/test_userdb.sql>;`
+        - `source <your absolute path to MaineMeetupMapper/Test_Data/test_categorydb.sql>;`
+
