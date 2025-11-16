@@ -42,5 +42,4 @@ mycursor.execute("CREATE TABLE IF NOT EXISTS Location (location_id INT PRIMARY K
 
 execute_sql_files([Path('./tables_/User_Table.sql'), Path('./tables_/event_table.sql'), Path('./tables_/Category_Table.sql'), Path('./tables_/review_table.sql'), Path('./tables_/RSVP_table.sql')])
 execute_sql_files(procedure_files)
-print(procedure_files)
 mydb.commit()
