@@ -1,3 +1,11 @@
+"""
+This script receives a maine_events.json file and imports the data
+into an SQL database.
+
+Author: Philip Lane and Claude Sonnet 4.5
+Date: 11/15/2025
+"""
+
 import json
 import mysql.connector
 from datetime import datetime
@@ -203,5 +211,6 @@ if __name__ == "__main__":
     print("=" * 60)
     print("Maine Events JSON to SQL Importer")
     print("=" * 60)
+
 
     import_events(JSON_FILE, skip_duplicates=SKIP_DUPLICATES)
