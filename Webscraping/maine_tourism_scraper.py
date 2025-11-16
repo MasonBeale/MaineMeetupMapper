@@ -17,6 +17,16 @@ import json
 import re
 import asyncio
 from playwright.async_api import async_playwright
+import datetime
+
+# Email validation function
+def validate_email(email):
+    pattern = re.compile(r"^[\w\.-]+@[\w\.-]+\.\w+$")
+    return bool(pattern.match(email))
+
+# Text cleaning function
+def clean_text(text):
+    return text.strip() if text else ''
 
 async def scrape_event(page, url):
     await page.goto(url)
@@ -53,13 +63,17 @@ async def scrape_event(page, url):
     if content_div:
         h1 = soup.find('h1')
         title = h1.get_text(strip=True) if h1 else ''
+    else:
+        print(f"Warning: contentRender_12 section not found on {url}")
+    if not title:
+        title = "No title found"
 
     # Date Extraction - Try extracting event_date from #priority-info > dd first
     priority_info = soup.find(class_='priority-info')
     if priority_info:
         dd_tags = priority_info.find_all('dd')
         for dd in dd_tags:
-            dd_text = dd.get_text(strip=True)
+            dd_text = clean_text(dd.get_text(strip=True))
             # Find all matching dates in this dd text
             date_matches = date_pattern.findall(dd_text)
             if date_matches:
@@ -77,8 +91,8 @@ async def scrape_event(page, url):
             label = child.find('span', class_='label')
             value = child.find('span', class_='value')
             if label and value:
-                key = label.get_text(strip=True)
-                val = value.get_text(strip=True)
+                key = clean_text(label.get_text(strip=True))
+                val = clean_text(value.get_text(strip=True))
                 detail_info_data[key] = val
             else:
                 # Find anchor tags labeled "Email" for email extraction
@@ -87,18 +101,21 @@ async def scrape_event(page, url):
                         email_address = a['href']
                         break
                 if email_address.startswith("mailto:"):
-                    email_address = email_address[len("mailto:"):]  # Removes 'mailto:'
+                    email_address = email_address[len("mailto:"):]
+                if not validate_email(email_address):
+                    email_address = ""
+
                 fallback_text = child.get_text(separator='\n', strip=True)
                 if fallback_text:
                     detail_info_data[f"info_{len(detail_info_data)+1}"] = fallback_text
 
             # Assign by position: 0-based index
             if idx == 0: 
-                location = child.get_text(separator='\n', strip=True)
+                location = clean_text(child.get_text(separator='\n', strip=True))
 
             # Check for start/end time in idx 1 or within existing loop:
             if idx in (1, 2):
-                text = child.get_text(separator='\n', strip=True)
+                text = clean_text(child.get_text(separator='\n', strip=True))
                 
                 # Extract event times from substring after "Time:" if present
                 time_pos = text.find("Time:")
@@ -106,9 +123,9 @@ async def scrape_event(page, url):
                     time_line = text[time_pos + len("Time:"):].strip()
                     time_line = time_line.splitlines()[0].strip()
                     if ' to ' in time_line:
-                        start_time, end_time = [t.strip() for t in time_line.split(' to ', 1)]
+                        start_time, end_time = [clean_text(t) for t in time_line.split(' to ', 1)]
                     else:
-                        start_time = time_line.strip()
+                        start_time = clean_text(time_line)
 
                 # Extract dates from the entire text block
                 if not event_date:  # Only update if not set above
@@ -129,14 +146,14 @@ async def scrape_event(page, url):
 
     # Return compiled data
     return {
-        'url': url,
         'title': title,
         'descriptionTab': description_tab_data,
-        'email_address': email_address, 
-        'location' : location,
+        'date' : event_date,
         'start_time' : start_time,
         'end_time' : end_time,
-        'date' : event_date
+        'url': url,
+        'email_address': email_address, 
+        'location' : location
     }
 
 async def main():

@@ -9,5 +9,7 @@ CREATE TABLE IF NOT EXISTS User (
     first_name VARCHAR(50),
     last_name VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_created_at (created_at),
+    INDEX idx_updated_at (updated_at)
 );
