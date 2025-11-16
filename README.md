@@ -1,12 +1,12 @@
 # MaineMeetupMapper
 ## The Team:
-Team Lead: Mason Beale | mason.beale@maine.edu
+Team Lead: Mason Beale | mason.beale@maine.edu | MasonBeale
 
-Kristina Zbinden | kristina.zbinden@maine.edu
+Kristina Zbinden | kristina.zbinden@maine.edu | kristinazbinden
 
-Logan Simba | logan.simba@maine.edu
+Logan Simba | logan.simba@maine.edu | LoganSimba
 
-Phil Lane | philip.lane@maine.edu
+Phil Lane | philip.lane@maine.edu | phlane
 
 # HOW TO RUN / SETUP
 ## 1. Run startup.py
@@ -55,8 +55,8 @@ Run meetup_scraper.py and events will be stored in meetup_events.json
 - Test table by running
    - "select * from Event;"
 
-## Phase 2
-### Tasks, deadlines, and Main Contributors:
+## Phase 2 Information
+### Beginning Tasks, deadlines, and Main Contributors:
 1. Recorded Video Demo (Nov, 13)
     * Mason
 3. Database schema scripts (Nov, 7)
@@ -73,15 +73,6 @@ Run meetup_scraper.py and events will be stored in meetup_events.json
     * All
 11. Team contributions (Nov, 14)
     * All
-
-### Member ID's:
-Mason : MasonBeale
-
-Logan : LoganSimba
-
-Phil : phlane
-
-Kristina : kristinazbinden
 
 ## Team Contributions
 ### Kristina
