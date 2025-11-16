@@ -1,3 +1,12 @@
+"""
+Scrapes www.mainepublic.org for events and creates a JSON file
+with event information.
+
+Author: Philip Lane and Claude Sonnet 4.5
+Date: 11/15/2025
+
+"""
+
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -796,5 +805,6 @@ if __name__ == "__main__":
     else:
         print("Invalid choice. Exiting.")
         exit(1)
+
 
     print(f"\n✅ Scraping complete! Total new events: {len(events)}")
