@@ -83,3 +83,15 @@ Kristina : kristinazbinden
 2. Scraping of https://www.mainepublic.org/
    - Script for scraping
    - Script for inserting data into SQL database
+  
+#### To test scraper -
+- Start maine_public_scraper by command line or within IDE
+- (As of now) Select whether you want to scrape the full event catalog, specific pages, or update since last use.
+- View generated JSON file of events.
+
+#### To test table - 
+- After running startup.py
+- Start and connect to MySQL local server
+- If using MySQL Workbench, connect to database server (localhost)
+- Test table by running
+   - "select * from Event;"
