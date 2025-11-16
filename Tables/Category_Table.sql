@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS Category (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_created_at (created_at),
-    INDEX idx_updated_at (updated_at) asfdf
+    INDEX idx_updated_at (updated_at)
 );
