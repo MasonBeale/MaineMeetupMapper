@@ -75,5 +75,11 @@ Kristina : kristinazbinden
 
 
 ### Phil
-1. Ownership of Event Table - CRUD, procedures, indexes, and query examples
+1. Ownership of Event Table -
+   - CRUD procedures,
+   - indexes,
+   - and query examples
+
 2. Scraping of https://www.mainepublic.org/
+   - Script for scraping
+   - Script for inserting data into SQL database
