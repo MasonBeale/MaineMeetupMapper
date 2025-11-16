@@ -4,7 +4,6 @@
 # loads all tables and procedures
 #
 import sys
-import os
 from pathlib import Path
 import mysql.connector
 
