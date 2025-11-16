@@ -7,11 +7,11 @@ CREATE TABLE Event (
     event_date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME,
-    max_capacity INT CHECK (max_capacity > 0),  -- ADD THIS
-    organizer_id INT NOT NULL,
+    max_capacity INT CHECK (max_capacity > 0),
+    organizer_id INT,
     location_id INT NOT NULL,
     description VARCHAR(750),
-    CONSTRAINT chk_event_times CHECK (end_time > start_time),  -- ADD THIS
+    CONSTRAINT chk_event_times CHECK (end_time > start_time),
     FOREIGN KEY (organizer_id) REFERENCES User(user_id),
     FOREIGN KEY (location_id) REFERENCES Location(location_id)
 );
