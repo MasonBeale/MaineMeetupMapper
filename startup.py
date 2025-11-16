@@ -23,12 +23,6 @@ mydb = mysql.connector.connect(
     database=sys.argv[4]
 )
 mycursor = mydb.cursor()
-mycursor.execute('CREATE TABLE IF NOT EXISTS tests (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255))')
-mycursor.execute('CREATE TABLE IF NOT EXISTS user (user_id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255))')
-mycursor.execute('CREATE TABLE IF NOT EXISTS event (event_id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255))')
-mycursor.execute("SHOW TABLES")
-for x in mycursor:
-    print(x)
 
 def find_sql_files(directory):
     sql_files = []
