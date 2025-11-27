@@ -107,3 +107,32 @@ Run meetup_scraper.py and events will be stored in meetup_events.json
 2. Scraping of https://www.mainepublic.org/
    - Script for scraping
    - Script for inserting data into SQL database
+  
+### Logan
+1. Ownership of Location Table
+
+   - Creation of table schema with primary key (location_id AUTO_INCREMENT)
+   - CRUD procedures (AddNewLocation stored procedure)
+   - Indexes for query optimization (idx_zip_code, idx_city, idx_venue_name)
+   - Query optimization analysis demonstrating performance improvements
+
+
+2. Scraping of https://www.eventbrite.com/
+
+    - Script for scraping venue/location data from Maine events
+    - Loading information to CSV and JSON formats
+    - Data cleaning pipeline with clean_data.py
+    - Generated locations.csv, locations_raw.csv, locations.json
+    - Created DATA_CLEANING_REPORT.txt documenting cleaning process
+
+
+3. Database Integration
+
+    - Location table serves as foundation for Event table foreign key relationships
+    - Established venue data structure for team integration
+
+
+
+
+
+
