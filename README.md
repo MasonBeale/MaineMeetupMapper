@@ -55,6 +55,16 @@ Run meetup_scraper.py and events will be stored in meetup_events.json
 - Test table by running
    - "select * from Event;"
 
+## To run frontend -
+- CD into /frontend
+- Run "npm run dev"
+- Default local host port is 3001
+
+## To run backend -
+- CD into /backend
+- Run "flask run"
+- Default local host port is 5000
+
 ## Phase 2 Information
 ### Beginning Tasks, deadlines, and Main Contributors:
 1. Recorded Video Demo (Nov, 13)
