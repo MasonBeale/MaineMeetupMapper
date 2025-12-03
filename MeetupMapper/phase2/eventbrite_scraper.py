@@ -50,86 +50,83 @@ def scrape_eventbrite_locations():
             time.sleep(2)
         
         print("Finding event elements...")
-        event_elements = driver.find_elements(By.CSS_SELECTOR, "article, div[class*='event'], div[class*='card']")
+        # The <a> tag itself has the data-event-location attribute
+        event_cards = driver.find_elements(By.CSS_SELECTOR, "a[data-event-location]")
         
-        print(f"✓ Found {len(event_elements)} potential event elements\n")
+        print(f"✓ Found {len(event_cards)} potential event elements\n")
         
         seen_venues = set()
         
-        # Extract text from each element
-        for i, element in enumerate(event_elements):
+        for card in event_cards:
             try:
-                text = element.text
+                # Get venue/event name from aria-label on the <a> tag itself
+                venue_name = "Unknown Venue"
+                aria_label = card.get_attribute("aria-label")
+                if aria_label and aria_label.startswith("View "):
+                    venue_name = aria_label[5:].strip()  # Remove "View " prefix
+                    # Truncate if too long
+                    if len(venue_name) > 60:
+                        venue_name = venue_name[:60]
                 
-                if not text or len(text) < 10:
+                # Get location from data-event-location attribute
+                location_text = card.get_attribute("data-event-location") or "Unknown"
+                
+                if not location_text or location_text == "Unknown":
                     continue
                 
-                lines = text.split('\n')
+                # Parse location (format: "Portland, ME")
+                city = location_text
+                state = "ME"
+                zip_code = "04101"
                 
-                for j, line in enumerate(lines):
-                    line = line.strip()
-                    
-                    if len(line) < 5:
-                        continue
-                    
-                    # Skip obvious non-venue text
-                    if re.search(r'^\w{3}\s+\d{1,2}', line):  # Date
-                        continue
-                    if re.search(r'^\d{1,2}:\d{2}', line):  # Time
-                        continue
-                    
-                    # Look for address-like patterns
-                    has_number = bool(re.search(r'\d', line))
-                    has_letter = bool(re.search(r'[a-zA-Z]', line))
-                    
-                    if has_number and has_letter and len(line) > 10:
-                        venue_name = "Unknown Venue"
-                        address = line
-                        city = "Portland"
-                        zip_code = "04101"
-                        
-                        # Extract ZIP
-                        zip_match = re.search(r'\b(\d{5})\b', line)
-                        if zip_match:
-                            zip_code = zip_match.group(1)
-                        
-                        # Parse venue name and address
-                        if '•' in line:
-                            parts = line.split('•')
-                            if len(parts) >= 2:
-                                venue_name = parts[0].strip()
-                                address = parts[1].strip()
-                        else:
-                            if j > 0 and len(lines[j-1]) > 5 and not re.search(r'\d', lines[j-1]):
-                                venue_name = lines[j-1].strip()
-                        
-                        # Parse city
-                        if ',' in address:
-                            addr_parts = address.split(',')
-                            if len(addr_parts) >= 2:
-                                address = addr_parts[0].strip()
-                                city = addr_parts[1].strip()
-                        
-                        venue_key = f"{venue_name}_{address}"
-                        
-                        if venue_key not in seen_venues and address != "Unknown":
-                            seen_venues.add(venue_key)
-                            
-                            location = {
-                                'venue_name': venue_name,
-                                'address': address,
-                                'city': city,
-                                'zip_code': zip_code
-                            }
-                            
-                            locations.append(location)
-                            print(f"{len(locations)}. {venue_name} - {city}, {zip_code}")
-                            
-                            if len(locations) >= 50:
-                                break
+                if ',' in location_text:
+                    parts = location_text.split(',')
+                    city = parts[0].strip()
+                    if len(parts) >= 2:
+                        state = parts[1].strip()
                 
-                if len(locations) >= 50:
-                    break
+                # Assign ZIP codes based on city
+                zip_codes = {
+                    'Portland': '04101',
+                    'South Portland': '04106',
+                    'Kennebunkport': '04046',
+                    'Bangor': '04401',
+                    'Augusta': '04330',
+                    'Lewiston': '04240',
+                    'Brunswick': '04011',
+                    'Saco': '04072',
+                    'Biddeford': '04005',
+                    'Waterville': '04901',
+                    'Gardiner': '04345',
+                    'Millinocket': '04462',
+                    'Carrabassett Valley': '04947',
+                    'Bar Harbor': '04609',
+                    'Ogunquit': '03907',
+                    'Freeport': '04032',
+                    'Camden': '04843',
+                    'Rockland': '04841',
+                    'Scarborough': '04074',
+                    'Westbrook': '04092'
+                }
+                zip_code = zip_codes.get(city, '04101')
+                
+                venue_key = f"{venue_name}_{city}"
+                
+                if venue_key not in seen_venues and venue_name != "Unknown Venue":
+                    seen_venues.add(venue_key)
+                    
+                    location = {
+                        'venue_name': venue_name,
+                        'address': city,  # Using city as address since street not available
+                        'city': city,
+                        'zip_code': zip_code
+                    }
+                    
+                    locations.append(location)
+                    print(f"{len(locations)}. {venue_name} - {city}, {zip_code}")
+                    
+                    if len(locations) >= 50:
+                        break
                     
             except Exception as e:
                 continue
@@ -170,9 +167,6 @@ if __name__ == "__main__":
         print("RAW Data Sample (before cleaning):")
         print("="*60)
         print(df.head(10).to_string(index=False))
-        
-        print("\n⚠ NOTE: This is RAW scraped data - contains junk entries")
-        print("   Run 'python clean_data.py' next to clean the data")
     else:
         print("\n⚠ No locations found")
     
