@@ -1,4 +1,8 @@
--- just making the RSVP table
+/*
+RSVP_table.sql 
+Creates the RSVP table and indexes for the table
+@author Mason Beale
+*/
 CREATE TABLE IF NOT EXISTS RSVP (
     RSVP_id INT PRIMARY KEY AUTO_INCREMENT,
     RSVP_status ENUM('Going', 'Interested', 'Not Going') NOT NULL,
@@ -8,7 +12,6 @@ CREATE TABLE IF NOT EXISTS RSVP (
     FOREIGN KEY (event_id) REFERENCES Event(event_id)
 );
 
--- Indexes for improved query performance
 CREATE INDEX IF NOT EXISTS idx_rsvp_user_id ON RSVP(user_id);
 CREATE INDEX IF NOT EXISTS idx_rsvp_event_id ON RSVP(event_id);
 CREATE INDEX IF NOT EXISTS idx_rsvp_status ON RSVP(RSVP_status);

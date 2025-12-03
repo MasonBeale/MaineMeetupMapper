@@ -1,8 +1,9 @@
-#
-# startup.py
-# creates a MMM database 
-# loads all tables and procedures
-#
+'''
+startup.py
+Initializes the database by creating necessary tables and stored procedures.
+Requires command line arguments: host, user, password, database_name
+@author Mason Beale
+'''
 import sys
 from pathlib import Path
 import mysql.connector
