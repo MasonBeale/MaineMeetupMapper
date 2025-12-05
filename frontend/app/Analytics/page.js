@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import styles from "../page.module.css";
+import Header from "../components/Header";
 
 export default function Analytics() {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState("month"); // day, week, month, year
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all");
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -38,37 +41,13 @@ export default function Analytics() {
   return (
     <div className={styles.page}>
       {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.logo}>MaineMeetupMapper</div>
-        
-        <div className={styles.headerRight}>
-          <div className={styles.userSection}>
-            <div className={styles.profilePic}>JD</div>
-            <button 
-              className={styles.hamburger} 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
-          </div>
-        </div>
-      </header>
-      {/* Mobile Menu */}
-      <div className={`${styles.mobileMenu} ${mobileMenuOpen ? styles.active : ""}`}>
-        <div className={styles.menuHeader}>
-          <h3>Menu</h3>
-          <button onClick={() => setMobileMenuOpen(false)}>✕</button>
-        </div>
-        <nav className={styles.menuNav}>
-          <a href="#">Dashboard</a>
-          <a href="#">Events</a>
-          <a href="#">Analytics</a>
-          <a href="#">Users</a>
-          <a href="#">Settings</a>
-        </nav>
-      </div>
+      <Header 
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filter={filter}
+        onFilterChange={setFilter}
+        userName="KZ"
+      />
 
       {/* Hero Section */}
       <section className={styles.hero}>
