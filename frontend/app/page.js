@@ -62,7 +62,6 @@ export default function Home() {
               <option value="weekend">Weekend</option>
             </select>
             </div>
-            <Link href="/page2" className={styles.navLink}>Analytics</Link>
             <div className={styles.userSection}>
               <div className={styles.profilePic}>KZ</div>
               <button 
@@ -73,6 +72,28 @@ export default function Home() {
                 <span></span>
                 <span></span>
               </button>
+              {/* Mobile Menu */}
+              <div className={`${styles.mobileMenu} ${menuOpen ? styles.active : ""}`}>
+                <div className={styles.menuHeader}>
+                  <div className={styles.profilePic}>KZ</div>
+                  <button onClick={() => setMenuOpen(false)}>×</button>
+                </div>
+                <nav className={styles.menuNav}>
+                  <Link href="/" onClick={() => setMenuOpen(false)}>Home</Link>
+                  <Link href="/Analytics" className={styles.navLink}>Analytics</Link>
+                  <a href="/profile" onClick={() => setMenuOpen(false)}>Profile</a>
+                  <a href="/favorites" onClick={() => setMenuOpen(false)}>Favorites</a>
+                  <a href="/settings" onClick={() => setMenuOpen(false)}>Settings</a>
+                  <a href="/login" onClick={() => setMenuOpen(false)}>Logout</a>
+                </nav>
+              </div>
+              {/* Overlay */}
+              {menuOpen && (
+                <div 
+                  className={styles.menuOverlay}
+                  onClick={() => setMenuOpen(false)}
+                />
+              )}
             </div>
         </div>
       </header>
@@ -120,22 +141,6 @@ export default function Home() {
           </div>
         )}
       </main>
-
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className={styles.mobileMenu}>
-          <div className={styles.menuHeader}>
-            <div className={styles.profilePic}>JD</div>
-            <button onClick={() => setMenuOpen(false)}>×</button>
-          </div>
-          <nav className={styles.menuNav}>
-            <a href="/profile">Profile</a>
-            <a href="/favorites">Favorites</a>
-            <a href="/settings">Settings</a>
-            <a href="/login">Logout</a>
-          </nav>
-        </div>
-      )}
     </div>
   );
 }
