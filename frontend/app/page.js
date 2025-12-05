@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -60,18 +61,19 @@ export default function Home() {
               <option value="today">Today</option>
               <option value="weekend">Weekend</option>
             </select>
-          </div>
-          <div className={styles.userSection}>
-            <div className={styles.profilePic}>KZ</div>
-            <button 
-              className={styles.hamburger}
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
-          </div>
+            </div>
+            <Link href="/page2" className={styles.navLink}>Analytics</Link>
+            <div className={styles.userSection}>
+              <div className={styles.profilePic}>KZ</div>
+              <button 
+                className={styles.hamburger}
+                onClick={() => setMenuOpen(!menuOpen)}
+              >
+                <span></span>
+                <span></span>
+                <span></span>
+              </button>
+            </div>
         </div>
       </header>
 
