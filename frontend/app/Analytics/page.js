@@ -35,30 +35,13 @@ export default function Analytics() {
       </div>
     );
   }
-
   return (
     <div className={styles.page}>
       {/* Header */}
       <header className={styles.header}>
-        <div className={styles.logo}>Analytics</div>
+        <div className={styles.logo}>MaineMeetupMapper</div>
         
         <div className={styles.headerRight}>
-          <div className={styles.searchContainer}>
-            <div className={styles.searchIcon}>🔍</div>
-            <input 
-              type="text" 
-              className={styles.searchInput}
-              placeholder="Search analytics..."
-            />
-          </div>
-          
-          <select className={styles.filterSelect} value={timeRange} onChange={(e) => setTimeRange(e.target.value)}>
-            <option value="day">Day</option>
-            <option value="week">Week</option>
-            <option value="month">Month</option>
-            <option value="year">Year</option>
-          </select>
-          
           <div className={styles.userSection}>
             <div className={styles.profilePic}>JD</div>
             <button 
@@ -72,7 +55,6 @@ export default function Analytics() {
           </div>
         </div>
       </header>
-
       {/* Mobile Menu */}
       <div className={`${styles.mobileMenu} ${mobileMenuOpen ? styles.active : ""}`}>
         <div className={styles.menuHeader}>
