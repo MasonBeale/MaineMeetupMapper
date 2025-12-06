@@ -1,4 +1,8 @@
--- deleting an RSVP from the RSVP table
+/*
+delete_RSVP.sql 
+Deleation procedures for RSVP table
+@author Mason Beale
+*/
 DELIMITER //
 CREATE PROCEDURE IF NOT EXISTS delete_RSVP (
     p_RSVP_id INT

@@ -1,4 +1,8 @@
--- adding a new RSVP to the RSVP table
+/*
+create_RSVP.sql 
+Creation procedures for RSVP table
+@author Mason Beale
+*/
 DELIMITER //
 CREATE PROCEDURE IF NOT EXISTS create_RSVP (
   p_rsvp_status ENUM('Going', 'Interested', 'Not Going'),
