@@ -1,10 +1,9 @@
 import mysql.connector
 
-# UPDATE YOUR CREDENTIALS
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'password',  # CHANGE THIS
+    'password': 'password',
     'database': 'mmmdb3'
 }
 
