@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 
@@ -16,6 +16,11 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Infinite scroll state
+  const [displayCount, setDisplayCount] = useState(20);
+  const [hasMore, setHasMore] = useState(true);
+  const observerTarget = useRef(null);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -62,7 +67,7 @@ export default function Home() {
         }
         if (endDate) {
           const end = new Date(endDate);
-          end.setHours(23, 59, 59); // Include the entire end date
+          end.setHours(23, 59, 59);
           matchesDateRange = matchesDateRange && eventDate <= end;
         }
       }
@@ -88,6 +93,49 @@ export default function Home() {
 
     return filtered;
   }, [events, searchTerm, selectedCity, startDate, endDate, sortBy]);
+
+  // Events to display (sliced for infinite scroll)
+  const displayedEvents = useMemo(() => {
+    return filteredEvents.slice(0, displayCount);
+  }, [filteredEvents, displayCount]);
+
+  // Check if there are more events to load
+  useEffect(() => {
+    setHasMore(displayCount < filteredEvents.length);
+  }, [displayCount, filteredEvents.length]);
+
+  // Reset display count when filters change
+  useEffect(() => {
+    setDisplayCount(20);
+  }, [searchTerm, selectedCity, startDate, endDate, sortBy]);
+
+  // Infinite scroll observer
+  const loadMore = useCallback(() => {
+    if (hasMore && !loading) {
+      setDisplayCount(prev => prev + 20);
+    }
+  }, [hasMore, loading]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [loadMore]);
 
   const handleEventClick = (eventId) => {
     router.push(`/events/${eventId}`);
@@ -269,6 +317,11 @@ export default function Home() {
             {filteredEvents.length} Event{filteredEvents.length !== 1 ? 's' : ''}
             {hasActiveFilters && ` (filtered from ${events.length})`}
           </h2>
+          {displayedEvents.length < filteredEvents.length && (
+            <div className={styles.loadingIndicator}>
+              Showing {displayedEvents.length} of {filteredEvents.length}
+            </div>
+          )}
         </div>
         
         {loading ? (
@@ -285,47 +338,79 @@ export default function Home() {
             )}
           </div>
         ) : (
-          <div className={styles.eventsGrid}>
-            {filteredEvents.map((event) => (
-              <div 
-                key={event.id} 
-                className={styles.eventCard}
-                onClick={() => handleEventClick(event.id)}
-              >
-                <div className={styles.eventImage}>
-                  <div className={styles.eventGradient}></div>
-                  <div className={styles.eventTime}>
-                    {event.time ? new Date(`2000-01-01T${event.time}`).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD'}
-                  </div>
-                  {event.price === 0 && (
-                    <div className={styles.freeBadge}>FREE</div>
-                  )}
-                </div>
-                <div className={styles.eventContent}>
-                  <div className={styles.eventMeta}>
-                    <div className={styles.eventLocationIcon}>📍</div>
-                    <span>{event.city}, {event.state}</span>
-                  </div>
-                  <h3>{event.name}</h3>
-                  <p className={styles.eventDescription}>
-                    {event.description?.substring(0, 100)}
-                    {event.description?.length > 100 ? '...' : ''}
-                  </p>
-                  <div className={styles.eventFooter}>
-                    <div className={styles.eventDate}>
-                      {new Date(event.date).toLocaleDateString()}
+          <>
+            <div className={styles.eventsGrid}>
+              {displayedEvents.map((event) => (
+                <div 
+                  key={event.id} 
+                  className={styles.eventCard}
+                  onClick={() => handleEventClick(event.id)}
+                >
+                  <div className={styles.eventHeader}>
+                    <div className={styles.eventDateBadge}>
+                      <div className={styles.dateMonth}>
+                        {new Date(event.date).toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
+                      </div>
+                      <div className={styles.dateDay}>
+                        {new Date(event.date).getDate()}
+                      </div>
                     </div>
-                    <div className={styles.eventStats}>
-                      {event.avg_rating > 0 && (
-                        <span className={styles.rating}>⭐ {event.avg_rating}</span>
-                      )}
-                      <span className={styles.rsvpCount}>👥 {event.rsvp_count}</span>
+                    {event.price === 0 && (
+                      <div className={styles.freeBadge}>FREE</div>
+                    )}
+                  </div>
+                  
+                  <div className={styles.eventContent}>
+                    <h3>{event.name}</h3>
+                    
+                    <div className={styles.eventMeta}>
+                      <div className={styles.metaItem}>
+                        <span className={styles.icon}>🕐</span>
+                        <span>{event.time ? new Date(`2000-01-01T${event.time}`).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD'}</span>
+                      </div>
+                      <div className={styles.metaItem}>
+                        <span className={styles.icon}>📍</span>
+                        <span>{event.city}, {event.state}</span>
+                      </div>
+                    </div>
+
+                    {event.description && (
+                      <p className={styles.eventDescription}>
+                        {event.description.substring(0, 120)}
+                        {event.description.length > 120 ? '...' : ''}
+                      </p>
+                    )}
+
+                    <div className={styles.eventFooter}>
+                      <div className={styles.eventStats}>
+                        {event.avg_rating > 0 && (
+                          <span className={styles.statItem}>
+                            ⭐ {event.avg_rating.toFixed(1)}
+                          </span>
+                        )}
+                        <span className={styles.statItem}>
+                          👥 {event.rsvp_count} going
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
+              ))}
+            </div>
+
+            {/* Infinite scroll trigger */}
+            {hasMore && (
+              <div ref={observerTarget} className={styles.loadMoreTrigger}>
+                <div className={styles.loadingSpinner}>Loading more events...</div>
               </div>
-            ))}
-          </div>
+            )}
+
+            {!hasMore && filteredEvents.length > 20 && (
+              <div className={styles.endMessage}>
+                You've reached the end! 🎉
+              </div>
+            )}
+          </>
         )}
       </main>
 

@@ -4,7 +4,6 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
   color: #ffffff;
   overflow-x: hidden;
-  margin: -8px !important;
 }
 
 .header {
@@ -27,6 +26,7 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  cursor: pointer;
 }
 
 .headerRight {
@@ -294,7 +294,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 .eventsHeader h2 {
@@ -302,120 +302,110 @@
   font-weight: 700;
 }
 
-.eventsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+.loadingIndicator {
+  color: #a1a1aa;
+  font-size: 0.9rem;
 }
 
+.eventsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+/* Simplified Event Cards (No Images) */
 .eventCard {
   background: rgba(20, 20, 22, 0.8);
-  border-radius: 24px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  overflow: hidden;
 }
 
 .eventCard:hover {
-  transform: translateY(-12px);
-  border-color: rgba(168, 85, 247, 0.3);
-  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
+  transform: translateY(-4px);
+  border-color: rgba(168, 85, 247, 0.4);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  background: rgba(25, 25, 27, 0.9);
 }
 
-.eventImage {
-  position: relative;
-  height: 200px;
-  background: linear-gradient(135deg, #1e1e2e, #2a2a3a);
-  overflow: hidden;
+.eventHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem 1.5rem 0;
 }
 
-.eventImage::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.6), rgba(59, 130, 246, 0.4));
-  opacity: 0;
-  transition: opacity 0.3s;
+.eventDateBadge {
+  background: linear-gradient(135deg, #a855f7, #3b82f6);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  text-align: center;
+  min-width: 70px;
 }
 
-.eventCard:hover .eventImage::before {
-  opacity: 1;
+.dateMonth {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
 }
 
-.eventGradient {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.8), rgba(59, 130, 246, 0.6));
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.eventCard:hover .eventGradient {
-  opacity: 1;
-}
-
-.eventTime {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: rgba(0, 0, 0, 0.8);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  backdrop-filter: blur(10px);
-  z-index: 2;
+.dateDay {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 0.25rem;
 }
 
 .freeBadge {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
   background: #10b981;
   color: white;
-  padding: 0.4rem 0.8rem;
+  padding: 0.4rem 0.9rem;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
-  z-index: 2;
+  letter-spacing: 0.5px;
 }
 
 .eventContent {
-  padding: 1.5rem;
-}
-
-.eventMeta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #a1a1aa;
-  font-size: 0.9rem;
-  margin-bottom: 0.75rem;
-}
-
-.eventLocationIcon {
-  font-size: 1rem;
+  padding: 1rem 1.5rem 1.5rem;
 }
 
 .eventContent h3 {
   font-size: 1.25rem;
   font-weight: 700;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
   line-height: 1.3;
+  color: #ffffff;
+}
+
+.eventMeta {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #a1a1aa;
+  font-size: 0.9rem;
+}
+
+.icon {
+  font-size: 1.1rem;
 }
 
 .eventDescription {
   color: #a1a1aa;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 0.95rem;
+  line-height: 1.6;
   margin-bottom: 1rem;
 }
 
@@ -423,25 +413,47 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.eventDate {
-  color: #a1a1aa;
-  font-size: 0.9rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .eventStats {
   display: flex;
-  gap: 1rem;
-  font-size: 0.85rem;
+  gap: 1.5rem;
 }
 
-.rating {
-  color: #fbbf24;
+.statItem {
+  font-size: 0.9rem;
+  color: #d1d5db;
 }
 
-.rsvpCount {
+/* Infinite Scroll Elements */
+.loadMoreTrigger {
+  padding: 3rem 0;
+  text-align: center;
+}
+
+.loadingSpinner {
   color: #a1a1aa;
+  font-size: 1rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.endMessage {
+  text-align: center;
+  padding: 3rem 0;
+  color: #a1a1aa;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .loading, .error, .noEvents {
@@ -526,15 +538,19 @@
   .filterRow {
     grid-template-columns: 1fr;
   }
+
+  .eventsGrid {
+    grid-template-columns: 1fr;
+  }
   
   .eventsHeader {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 0.5rem;
   }
   
   .hero {
-    padding: 6rem 1rem 3rem;
+    padding: 4rem 1rem 3rem;
   }
 
   .filterSection {
@@ -543,5 +559,10 @@
 
   .filterContainer {
     padding: 1.5rem;
+  }
+
+  .eventMeta {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }
