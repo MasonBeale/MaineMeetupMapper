@@ -7,6 +7,7 @@ import styles from "./page.module.css";
 export default function Home() {
   const router = useRouter();
   const [events, setEvents] = useState([]);
+  const [totalEvents, setTotalEvents] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCity, setSelectedCity] = useState("all");
   const [startDate, setStartDate] = useState("");
@@ -22,14 +23,29 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const observerTarget = useRef(null);
 
+  // Fetch events from backend with all filters
   useEffect(() => {
     async function fetchEvents() {
       try {
         setLoading(true);
-        const res = await fetch("http://127.0.0.1:5000/api/events");
+        
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (searchTerm) params.append('search', searchTerm);
+        if (selectedCity !== 'all') params.append('city', selectedCity);
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        params.append('sort_by', sortBy);
+        params.append('limit', displayCount);
+        params.append('offset', 0);
+        
+        const res = await fetch(`http://127.0.0.1:5000/api/events?${params}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        setEvents(data);
+        
+        setEvents(data.events);
+        setTotalEvents(data.total);
+        setHasMore(data.events.length < data.total);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch events");
       } finally {
@@ -37,72 +53,13 @@ export default function Home() {
       }
     }
     fetchEvents();
-  }, []);
+  }, [searchTerm, selectedCity, startDate, endDate, sortBy, displayCount]);
 
   // Get unique cities from events for the dropdown
   const cities = useMemo(() => {
     const uniqueCities = [...new Set(events.map(event => event.city))].filter(Boolean);
     return uniqueCities.sort();
   }, [events]);
-
-  // Filter and sort events
-  const filteredEvents = useMemo(() => {
-    let filtered = events.filter(event => {
-      // Search filter
-      const matchesSearch = 
-        event.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.location?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      // City filter
-      const matchesCity = selectedCity === "all" || event.city === selectedCity;
-      
-      // Date range filter
-      let matchesDateRange = true;
-      if (startDate || endDate) {
-        const eventDate = new Date(event.date);
-        if (startDate) {
-          const start = new Date(startDate);
-          matchesDateRange = matchesDateRange && eventDate >= start;
-        }
-        if (endDate) {
-          const end = new Date(endDate);
-          end.setHours(23, 59, 59);
-          matchesDateRange = matchesDateRange && eventDate <= end;
-        }
-      }
-      
-      return matchesSearch && matchesCity && matchesDateRange;
-    });
-
-    // Sort events
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "date":
-          return new Date(a.date) - new Date(b.date);
-        case "name":
-          return a.name.localeCompare(b.name);
-        case "rating":
-          return (b.avg_rating || 0) - (a.avg_rating || 0);
-        case "popular":
-          return (b.rsvp_count || 0) - (a.rsvp_count || 0);
-        default:
-          return 0;
-      }
-    });
-
-    return filtered;
-  }, [events, searchTerm, selectedCity, startDate, endDate, sortBy]);
-
-  // Events to display (sliced for infinite scroll)
-  const displayedEvents = useMemo(() => {
-    return filteredEvents.slice(0, displayCount);
-  }, [filteredEvents, displayCount]);
-
-  // Check if there are more events to load
-  useEffect(() => {
-    setHasMore(displayCount < filteredEvents.length);
-  }, [displayCount, filteredEvents.length]);
 
   // Reset display count when filters change
   useEffect(() => {
@@ -314,12 +271,11 @@ export default function Home() {
       <main className={styles.main}>
         <div className={styles.eventsHeader}>
           <h2>
-            {filteredEvents.length} Event{filteredEvents.length !== 1 ? 's' : ''}
-            {hasActiveFilters && ` (filtered from ${events.length})`}
+            {totalEvents} Event{totalEvents !== 1 ? 's' : ''}
           </h2>
-          {displayedEvents.length < filteredEvents.length && (
+          {events.length < totalEvents && (
             <div className={styles.loadingIndicator}>
-              Showing {displayedEvents.length} of {filteredEvents.length}
+              Showing {events.length} of {totalEvents}
             </div>
           )}
         </div>
@@ -328,7 +284,7 @@ export default function Home() {
           <div className={styles.loading}>Loading events...</div>
         ) : error ? (
           <div className={styles.error}>Error: {error}</div>
-        ) : filteredEvents.length === 0 ? (
+        ) : events.length === 0 ? (
           <div className={styles.noEvents}>
             <p>No events found matching your criteria</p>
             {hasActiveFilters && (
@@ -340,7 +296,7 @@ export default function Home() {
         ) : (
           <>
             <div className={styles.eventsGrid}>
-              {displayedEvents.map((event) => (
+              {events.map((event) => (
                 <div 
                   key={event.id} 
                   className={styles.eventCard}
@@ -405,7 +361,7 @@ export default function Home() {
               </div>
             )}
 
-            {!hasMore && filteredEvents.length > 20 && (
+            {!hasMore && events.length > 20 && (
               <div className={styles.endMessage}>
                 You've reached the end! 🎉
               </div>

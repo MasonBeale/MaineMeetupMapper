@@ -28,10 +28,14 @@ def get_db_connection():
 def get_events():
     """Get all events with optional filtering"""
     try:
-        # Get query parameters for filtering
+        # Get ALL filter parameters from frontend
         search = request.args.get('search', '')
-        category_id = request.args.get('category')
-        date_filter = request.args.get('date')
+        city = request.args.get('city', '')
+        start_date = request.args.get('start_date', '')
+        end_date = request.args.get('end_date', '')
+        sort_by = request.args.get('sort_by', 'date')  # date, name, rating, popular
+        limit = request.args.get('limit', 100, type=int)
+        offset = request.args.get('offset', 0, type=int)
         
         connection = get_db_connection()
         if not connection:
@@ -39,7 +43,7 @@ def get_events():
         
         cursor = connection.cursor(dictionary=True)
         
-        # Build query with JOINs - using correct column names
+        # Build query
         query = """
             SELECT 
                 e.event_id,
@@ -75,20 +79,68 @@ def get_events():
             search_param = f"%{search}%"
             params.extend([search_param, search_param])
         
-        # Add date filter
-        if date_filter == 'today':
-            query += " AND DATE(e.event_date) = CURDATE()"
-        elif date_filter == 'weekend':
-            query += " AND DAYOFWEEK(e.event_date) IN (1, 7)"
-        elif date_filter == 'upcoming':
-            query += " AND e.event_date >= CURDATE()"
+        # Add city filter - NEW!
+        if city and city != 'all':
+            query += " AND l.city = %s"
+            params.append(city)
         
-        query += " GROUP BY e.event_id ORDER BY e.event_date ASC"
+        # Add date range filters - NEW!
+        if start_date:
+            query += " AND e.event_date >= %s"
+            params.append(start_date)
+        
+        if end_date:
+            query += " AND e.event_date <= %s"
+            params.append(end_date)
+        
+        query += " GROUP BY e.event_id"
+        
+        # Add sorting - NEW!
+        if sort_by == 'name':
+            query += " ORDER BY e.event_name ASC"
+        elif sort_by == 'rating':
+            query += " ORDER BY avg_rating DESC"
+        elif sort_by == 'popular':
+            query += " ORDER BY rsvp_count DESC"
+        else:  # default to date
+            query += " ORDER BY e.event_date ASC"
+        
+        # Add pagination - NEW!
+        query += " LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
         
         cursor.execute(query, params)
         events = cursor.fetchall()
         
-        # Format the results
+        # Get total count for pagination
+        count_query = """
+            SELECT COUNT(DISTINCT e.event_id) as total
+            FROM event e
+            LEFT JOIN location l ON e.location_id = l.location_id
+            WHERE 1=1
+        """
+        count_params = []
+        
+        if search:
+            count_query += " AND (e.event_name LIKE %s OR e.description LIKE %s)"
+            count_params.extend([search_param, search_param])
+        
+        if city and city != 'all':
+            count_query += " AND l.city = %s"
+            count_params.append(city)
+        
+        if start_date:
+            count_query += " AND e.event_date >= %s"
+            count_params.append(start_date)
+        
+        if end_date:
+            count_query += " AND e.event_date <= %s"
+            count_params.append(end_date)
+        
+        cursor.execute(count_query, count_params)
+        total_count = cursor.fetchone()['total']
+        
+        # Format the results (same as before)
         formatted_events = []
         for event in events:
             formatted_event = {
@@ -103,20 +155,25 @@ def get_events():
                 'address': event['address'],
                 'city': event['city'],
                 'zip_code': event['zip_code'],
-                'state': 'ME',  # Assuming Maine since it's MaineMeetupMapper
+                'state': 'ME',
                 'organizer': f"{event['organizer_first_name']} {event['organizer_last_name']}" if event['organizer_first_name'] else 'Unknown',
                 'organizer_email': event['organizer_email'],
                 'rsvp_count': event['rsvp_count'] or 0,
                 'avg_rating': round(float(event['avg_rating']), 1) if event['avg_rating'] else 0,
                 'review_count': event['review_count'] or 0,
-                'price': 0  # Your database doesn't have price field, defaulting to free
+                'price': 0
             }
             formatted_events.append(formatted_event)
         
         cursor.close()
         connection.close()
         
-        return jsonify(formatted_events)
+        return jsonify({
+            'events': formatted_events,
+            'total': total_count,
+            'limit': limit,
+            'offset': offset
+        })
     
     except Error as e:
         print(f"Database error: {e}")
