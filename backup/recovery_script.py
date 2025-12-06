@@ -10,7 +10,7 @@ DB_CONFIG = {
     'database': 'mmmdb3'
 }
 
-MYSQL_PATH = r'C:\Program Files\MySQL\MySQL Server 9.5\bin\mysql.exe'  # UPDATE THIS
+MYSQL_PATH = r'C:\Program Files\MySQL\MySQL Server 9.5\bin\mysql.exe'
 
 def list_backups():
     backup_dir = Path('./backup/backups')
@@ -38,11 +38,9 @@ def restore_backup(backup_file):
     ]
     subprocess.run(drop_cmd, check=True)
     
-    # Read backup and filter out GTID lines
     with open(backup_file, 'r', encoding='utf-8') as f:
         sql_content = f.read()
     
-    # Remove GTID_PURGED lines that cause issues
     lines = sql_content.split('\n')
     filtered_lines = [line for line in lines if 'GTID_PURGED' not in line]
     filtered_sql = '\n'.join(filtered_lines)
