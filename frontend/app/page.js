@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import Header from "./components/Header";
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -39,41 +41,13 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.logo}>MaineMeetupMapper</div>
-        <div className={styles.headerRight}>
-          <div className={styles.searchContainer}>
-            <input
-              type="text"
-              placeholder="Search events..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={styles.searchInput}
-            />
-            <select 
-              value={filter} 
-              onChange={(e) => setFilter(e.target.value)}
-              className={styles.filterSelect}
-            >
-              <option value="all">All</option>
-              <option value="today">Today</option>
-              <option value="weekend">Weekend</option>
-            </select>
-          </div>
-          <div className={styles.userSection}>
-            <div className={styles.profilePic}>KZ</div>
-            <button 
-              className={styles.hamburger}
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header 
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filter={filter}
+        onFilterChange={setFilter}
+        userName="KZ"
+      />
 
       {/* Hero Section */}
       <section className={styles.hero}>
@@ -118,22 +92,6 @@ export default function Home() {
           </div>
         )}
       </main>
-
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className={styles.mobileMenu}>
-          <div className={styles.menuHeader}>
-            <div className={styles.profilePic}>JD</div>
-            <button onClick={() => setMenuOpen(false)}>×</button>
-          </div>
-          <nav className={styles.menuNav}>
-            <a href="/profile">Profile</a>
-            <a href="/favorites">Favorites</a>
-            <a href="/settings">Settings</a>
-            <a href="/login">Logout</a>
-          </nav>
-        </div>
-      )}
     </div>
   );
 }

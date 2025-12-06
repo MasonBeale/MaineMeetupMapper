@@ -1,4 +1,8 @@
--- adding a new review to the review table
+/*
+create_review.sql 
+Create procedures for review table
+@author Mason Beale
+*/
 DELIMITER //
 CREATE PROCEDURE IF NOT EXISTS create_review (
   p_rating INT,

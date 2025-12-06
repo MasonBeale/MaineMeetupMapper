@@ -1,4 +1,8 @@
--- updates the rating and comments of an existing review by ID
+/*
+update_review.sql 
+Update procedures for review table
+@author Mason Beale
+*/
 CREATE PROCEDURE IF NOT EXISTS update_review (
     p_review_id INT,
     p_rating INT,
