@@ -2,6 +2,9 @@
   min-height: 100vh;
   background: #0a0a0b;
   color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 .header {
@@ -26,6 +29,7 @@
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.3s;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
 }
 
 .backButton:hover {
@@ -47,6 +51,7 @@
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.3s;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
 }
 
 .shareButton:hover {
@@ -59,6 +64,7 @@
   padding: 6rem 2rem 4rem;
   text-align: center;
   overflow: hidden;
+  background: #0a0a0b;
 }
 
 .heroGradient {
@@ -125,6 +131,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 2rem 4rem;
+  background: #0a0a0b;
 }
 
 .content {
@@ -165,6 +172,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
+  color: #ffffff;
 }
 
 .locationCard p, .organizerCard p {
@@ -191,6 +199,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   flex-shrink: 0;
+  color: #ffffff;
 }
 
 .reviewsContainer {
@@ -225,12 +234,14 @@
   font-size: 1.1rem;
   font-weight: 700;
   flex-shrink: 0;
+  color: #ffffff;
 }
 
 .reviewHeader h4 {
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 0.25rem;
+  color: #ffffff;
 }
 
 .rating {
@@ -300,6 +311,7 @@
   cursor: pointer;
   transition: all 0.3s;
   margin-bottom: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
 }
 
 .rsvpButton:hover {
@@ -324,6 +336,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
+  color: #ffffff;
 }
 
 .statLabel {
@@ -352,11 +365,13 @@
 .error h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
+  color: #ffffff;
 }
 
 .error p {
   font-size: 1.1rem;
   margin-bottom: 2rem;
+  color: #d1d5db;
 }
 
 /* Responsive */
@@ -384,5 +399,9 @@
   .organizerCard {
     flex-direction: column;
     text-align: center;
+  }
+  
+  .main {
+    padding: 0 1rem 4rem;
   }
 }
