@@ -35,43 +35,20 @@
   gap: 1.5rem;
 }
 
-.searchContainer {
-  display: flex;
-  align-items: center;
+.filterToggle {
   background: rgba(255, 255, 255, 0.05);
-  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 0.75rem 1.5rem;
   border-radius: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  min-width: 300px;
-}
-
-.searchIcon {
-  margin-right: 0.75rem;
-  font-size: 1.1rem;
-  opacity: 0.7;
-}
-
-.searchInput {
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
-  color: #ffffff;
-  font-size: 0.95rem;
-}
-
-.searchInput::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.filterSelect {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
   font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.filterToggle:hover {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: rgba(168, 85, 247, 0.5);
 }
 
 .userSection {
@@ -116,7 +93,7 @@
 }
 
 .hero {
-  padding: 8rem 2rem 4rem;
+  padding: 6rem 2rem 4rem;
   text-align: center;
   position: relative;
 }
@@ -156,6 +133,157 @@
   z-index: 1;
 }
 
+/* Filter Section Styles */
+.filterSection {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem 2rem;
+}
+
+.filterContainer {
+  background: rgba(20, 20, 22, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 2rem;
+  backdrop-filter: blur(20px);
+}
+
+.filterRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.filterRow:last-child {
+  margin-bottom: 0;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filterGroup label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filterInput, .filterSelect {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+}
+
+.filterInput:focus, .filterSelect:focus {
+  outline: none;
+  border-color: rgba(168, 85, 247, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.filterInput::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.filterSelect option {
+  background: #1a1a1b;
+  color: #ffffff;
+}
+
+.clearButton {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  padding: 0.875rem 1.5rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.clearButton:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.clearButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.clearButtonLarge {
+  background: linear-gradient(135deg, #a855f7, #3b82f6);
+  border: none;
+  color: #ffffff;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 1rem;
+}
+
+.clearButtonLarge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(168, 85, 247, 0.4);
+}
+
+.activeFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.activeFiltersLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(168, 85, 247, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #a855f7;
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.filterChip button {
+  background: none;
+  border: none;
+  color: #a855f7;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  transition: transform 0.2s;
+}
+
+.filterChip button:hover {
+  transform: scale(1.2);
+}
+
 .main {
   max-width: 1400px;
   margin: 0 auto;
@@ -172,13 +300,6 @@
 .eventsHeader h2 {
   font-size: 2rem;
   font-weight: 700;
-}
-
-.viewAll {
-  color: #a855f7;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 0.95rem;
 }
 
 .eventsGrid {
@@ -251,6 +372,20 @@
   font-size: 0.85rem;
   font-weight: 600;
   backdrop-filter: blur(10px);
+  z-index: 2;
+}
+
+.freeBadge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #10b981;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  z-index: 2;
 }
 
 .eventContent {
@@ -273,13 +408,40 @@
 .eventContent h3 {
   font-size: 1.25rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   line-height: 1.3;
+}
+
+.eventDescription {
+  color: #a1a1aa;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.eventFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .eventDate {
   color: #a1a1aa;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+}
+
+.eventStats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+
+.rating {
+  color: #fbbf24;
+}
+
+.rsvpCount {
+  color: #a1a1aa;
 }
 
 .loading, .error, .noEvents {
@@ -291,6 +453,13 @@
 
 .error {
   color: #ef4444;
+}
+
+.noEvents {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
 .mobileMenu {
@@ -349,8 +518,13 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .searchContainer {
-    display: none;
+  .filterToggle {
+    font-size: 0.85rem;
+    padding: 0.6rem 1rem;
+  }
+  
+  .filterRow {
+    grid-template-columns: 1fr;
   }
   
   .eventsHeader {
@@ -361,5 +535,13 @@
   
   .hero {
     padding: 6rem 1rem 3rem;
+  }
+
+  .filterSection {
+    padding: 0 1rem 2rem;
+  }
+
+  .filterContainer {
+    padding: 1.5rem;
   }
 }
