@@ -117,6 +117,10 @@ Run meetup_scraper.py and events will be stored in meetup_events.json
 2. Scraping of https://www.mainepublic.org/
    - Script for scraping
    - Script for inserting data into SQL database
+
+3. Event Page
+4. Backup & Recovery Scripts
+5. Start.bat File
   
 ### Logan
 1. Ownership of Location Table

@@ -9,7 +9,7 @@ DB_CONFIG = {
     'database': 'mmmdb3'
 }
 
-MYSQLDUMP_PATH = r'C:\Program Files\MySQL\MySQL Server 9.5\bin\mysqldump.exe'  # UPDATE THIS
+MYSQLDUMP_PATH = r'C:\Program Files\MySQL\MySQL Server 9.5\bin\mysqldump.exe'
 BACKUP_DIR = Path('./backup/backups')
 BACKUP_DIR.mkdir(exist_ok=True)
 
