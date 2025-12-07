@@ -18,7 +18,9 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchUser() {
+      console.log("Calling apiMe...");
       const me = await apiMe();
+      console.log("apiMe result:", me);
       setUser(me);
     }
     fetchUser();
@@ -50,9 +52,17 @@ export default function Home() {
     return matchesSearch && matchesFilter;
   });
 
+  function handleRegistered(newUser) {
+    setUser(newUser);
+  }
+
   async function handleLogout() {
     await apiLogout();
     setUser(null);
+  }
+
+  function handleLoggedIn(existingUser) {
+    setUser(existingUser);       
   }
 
   return (
@@ -64,6 +74,8 @@ export default function Home() {
         onFilterChange={setFilter}
         userName={user ? user.username : null}
         onLogout={handleLogout}
+        onRegistered={handleRegistered}
+        onLoggedIn={handleLoggedIn}
       />
 
       {/* Hero Section */}

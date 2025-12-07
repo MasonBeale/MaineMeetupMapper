@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { apiLogin } from "../lib/api";
 import styles from "../page.module.css";
 
-export default function LoginModal({ onClose }) {
+export default function LoginModal({ onClose, onLoggedIn }) {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -15,14 +15,19 @@ export default function LoginModal({ onClose }) {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
     const data = await apiLogin({ username, password });
     setLoading(false);
+
     if (data.error) {
       setError(data.error);
       return;
     }
+
+    if (onLoggedIn && data.user) {
+        onLoggedIn(data.user);
+      }
     onClose();
-    router.refresh(); // Refresh parent data
   }
 
   return (

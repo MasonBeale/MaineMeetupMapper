@@ -11,12 +11,14 @@ const Header = ({
   onSearchChange, 
   filter = "all", 
   onFilterChange,
-  userName = null,          // null means not logged in
-  onLogout,                 // optional logout handler from parent
+  userName = null,          
+  onLogout, 
+  onRegistered,
+  onLoggedIn,           
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Derive initials from userName if you want more than raw text
+  // Derive initials from userName 
   const initials = userName
   ? userName
       .split(" ")
@@ -122,10 +124,12 @@ const Header = ({
         </div>
       </div>
       {showLoginModal && (
-        <LoginModal onClose={() => setShowLoginModal(false)} />
+        <LoginModal onClose={() => setShowLoginModal(false)} 
+        onLoggedIn={onLoggedIn} />
       )}
       {showRegisterModal && (
-        <RegisterModal onClose={() => setShowRegisterModal(false)} />
+        <RegisterModal onClose={() => setShowRegisterModal(false)}
+        onRegistered={onRegistered}  />
       )}
     </header>
   );

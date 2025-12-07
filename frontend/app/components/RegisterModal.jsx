@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { apiRegister } from "../lib/api";
 import styles from "../page.module.css";
 
-export default function RegisterModal({ onClose }) {
+export default function RegisterModal({ onClose, onRegistered }) {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -18,15 +18,19 @@ export default function RegisterModal({ onClose }) {
     setLoading(true);
     
     const data = await apiRegister({ username, email, password });
+    console.log("apiRegister result:", data);
     setLoading(false);
     
     if (data.error) {
       setError(data.error);
       return;
     }
+
+    if (onRegistered && data.user) {
+        onRegistered(data.user);       
+      }
     
     onClose();
-    router.refresh(); // Refresh parent data (user state)
   }
 
   return (
