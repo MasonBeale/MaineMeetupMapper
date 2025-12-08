@@ -3,15 +3,35 @@
 import { useState } from "react";
 import Link from "next/link";
 import styles from "../page.module.css";
+import LoginModal from "./LoginModal";
+import RegisterModal from "./RegisterModal";
 
 const Header = ({ 
   searchTerm = "", 
   onSearchChange, 
   filter = "all", 
   onFilterChange,
-  userName = "KZ"
+  userName = null,          
+  onLogout, 
+  onRegistered,
+  onLoggedIn,           
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Derive initials from userName 
+  const initials = userName
+  ? userName
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase()
+  : "";
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+
+  const isLoggedIn = !!userName;
+
 
   return (
     <header className={styles.header}>
@@ -36,7 +56,11 @@ const Header = ({
           </select>
         </div>
         <div className={styles.userSection}>
-          <div className={styles.profilePic}>{userName}</div>
+          {/* Header circle: initials if logged in, generic if not */}
+          <div className={styles.profilePic}>
+            {isLoggedIn ? initials : "?"}
+          </div>
+
           <button 
             className={styles.hamburger}
             onClick={() => setMenuOpen(!menuOpen)}
@@ -50,16 +74,43 @@ const Header = ({
           {/* Mobile Menu */}
           <div className={`${styles.mobileMenu} ${menuOpen ? styles.active : ""}`}>
             <div className={styles.menuHeader}>
-              <div className={styles.profilePic}>{userName}</div>
-              <button onClick={() => setMenuOpen(false)} aria-label="Close menu">×</button>
+              <div className={styles.profilePic}>
+                {isLoggedIn ? initials : "?"}
+              </div>
+              <button
+                onClick={() => setMenuOpen(false)}
+                aria-label="Close menu"
+              >
+                ×
+              </button>
             </div>
             <nav className={styles.menuNav}>
               <Link href="/" onClick={() => setMenuOpen(false)}>Home</Link>
               <Link href="/Analytics" className={styles.navLink}>Analytics</Link>
-              <a href="/profile" onClick={() => setMenuOpen(false)}>Profile</a>
-              <a href="/favorites" onClick={() => setMenuOpen(false)}>Favorites</a>
-              <a href="/settings" onClick={() => setMenuOpen(false)}>Settings</a>
-              <a href="/login" onClick={() => setMenuOpen(false)}>Logout</a>
+              {isLoggedIn ? (
+                <>
+                  <Link href="Account" className={styles.navLink}>My Account</Link>
+                  <Link href="Favorites" className={styles.navLink}>Favorites</Link>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      // Call logout handler if provided
+                      if (onLogout) {
+                        await onLogout();
+                      }
+                      setMenuOpen(false);
+                    }}
+                    className={styles.menuButton}
+                  >
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <> 
+                  <button onClick={() => setShowLoginModal(true)} className={styles.menuButton}>Log in</button>
+                  <button onClick={() => setShowRegisterModal(true)} className={styles.menuButton}>Sign up</button>
+                </>
+              )}
             </nav>
           </div>
           
@@ -72,6 +123,14 @@ const Header = ({
           )}
         </div>
       </div>
+      {showLoginModal && (
+        <LoginModal onClose={() => setShowLoginModal(false)} 
+        onLoggedIn={onLoggedIn} />
+      )}
+      {showRegisterModal && (
+        <RegisterModal onClose={() => setShowRegisterModal(false)}
+        onRegistered={onRegistered}  />
+      )}
     </header>
   );
 };

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "./components/Header";
 import styles from "./page.module.css";
+import { apiMe, apiLogout } from "./lib/api";
 
 export default function Home() {
   const [events, setEvents] = useState([]);
@@ -12,7 +13,19 @@ export default function Home() {
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    async function fetchUser() {
+      console.log("Calling apiMe...");
+      const me = await apiMe();
+      console.log("apiMe result:", me);
+      setUser(me);
+    }
+    fetchUser();
+  }, []);
+
 
   useEffect(() => {
     async function fetchEvents() {
@@ -21,7 +34,7 @@ export default function Home() {
         const res = await fetch("http://127.0.0.1:5000/api/events");
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        setEvents(data);
+        setEvents(Array.isArray(data) ? data : data.events || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch events");
       } finally {
@@ -39,6 +52,19 @@ export default function Home() {
     return matchesSearch && matchesFilter;
   });
 
+  function handleRegistered(newUser) {
+    setUser(newUser);
+  }
+
+  async function handleLogout() {
+    await apiLogout();
+    setUser(null);
+  }
+
+  function handleLoggedIn(existingUser) {
+    setUser(existingUser);       
+  }
+
   return (
     <div className={styles.page}>
       <Header 
@@ -46,7 +72,10 @@ export default function Home() {
         onSearchChange={setSearchTerm}
         filter={filter}
         onFilterChange={setFilter}
-        userName="KZ"
+        userName={user ? user.username : null}
+        onLogout={handleLogout}
+        onRegistered={handleRegistered}
+        onLoggedIn={handleLoggedIn}
       />
 
       {/* Hero Section */}
