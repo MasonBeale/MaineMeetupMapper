@@ -683,6 +683,108 @@
   cursor: not-allowed;
 }
 
+.accountDangerZoneTitle {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f97373;
+}
+
+.accountDangerText {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+}
+
+.accountDangerBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.deleteButton {
+  padding: 0.85rem 1.5rem;
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  border: none;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.deleteButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(239, 68, 68, 0.4);
+}
+
+/* Reuse modalOverlay / modalContent base, but tweak for confirm */
+.confirmModalContent {
+  background: rgba(20, 20, 22, 0.98);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.6);
+}
+
+.confirmTitle {
+  margin: 0 0 0.75rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.confirmText {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1.5rem;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.confirmCancelButton {
+  padding: 0.75rem 1.3rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e5e7eb;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.confirmCancelButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.confirmDeleteButton {
+  padding: 0.75rem 1.4rem;
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  border-radius: 10px;
+  border: none;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.confirmDeleteButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(239, 68, 68, 0.4);
+}
+
 @media (max-width: 480px) {
   .modalContent {
     padding: 2rem 1.5rem;

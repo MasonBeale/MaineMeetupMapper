@@ -202,3 +202,25 @@ def me():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+@app.route("/api/me", methods=["DELETE"])
+def delete_me():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    try:
+        cursor.execute("DELETE FROM User WHERE user_id = %s", (user_id,))
+        mysql.connection.commit()
+    except Exception as e:
+        mysql.connection.rollback()
+        cursor.close()
+        return jsonify({"error": "Failed to delete account"}), 500
+
+    cursor.close()
+    session.clear()
+    return jsonify({"message": "Account deleted"}), 200
+
+

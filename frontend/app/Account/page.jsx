@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiMe, apiLogout, apiUpdateMe } from "../lib/api";
+import { apiMe, apiLogout, apiUpdateMe, apiDeleteMe } from "../lib/api";
+import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import styles from "../page.module.css";
 
 export default function AccountPage() {
+  const router = useRouter();
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
-  // Saved profile (what the server has confirmed)
+  // Saved profile
   const [profile, setProfile] = useState({
     username: "",
     firstName: "",
@@ -17,7 +19,7 @@ export default function AccountPage() {
     email: "",
   });
 
-  // Draft values (what the user is editing)
+  // Draft form values
   const [draftFirstName, setDraftFirstName] = useState("");
   const [draftLastName, setDraftLastName] = useState("");
   const [draftEmail, setDraftEmail] = useState("");
@@ -25,6 +27,9 @@ export default function AccountPage() {
 
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function fetchUser() {
@@ -40,8 +45,6 @@ export default function AccountPage() {
           email: me.email || "",
         };
         setProfile(newProfile);
-
-        // initialize draft from profile
         setDraftFirstName(newProfile.firstName);
         setDraftLastName(newProfile.lastName);
         setDraftEmail(newProfile.email);
@@ -54,38 +57,31 @@ export default function AccountPage() {
   async function handleLogout() {
     await apiLogout();
     setUser(null);
+    router.push("/");  // redirect to home
+  }
+
+  function syncFromUserObject(u) {
+    if (!u) return;
+    const newProfile = {
+      username: u.username || "",
+      firstName: u.first_name || "",
+      lastName: u.last_name || "",
+      email: u.email || "",
+    };
+    setProfile(newProfile);
+    setDraftFirstName(newProfile.firstName);
+    setDraftLastName(newProfile.lastName);
+    setDraftEmail(newProfile.email);
   }
 
   function handleLoggedIn(existingUser) {
     setUser(existingUser);
-    if (existingUser) {
-      const newProfile = {
-        username: existingUser.username || "",
-        firstName: existingUser.first_name || "",
-        lastName: existingUser.last_name || "",
-        email: existingUser.email || "",
-      };
-      setProfile(newProfile);
-      setDraftFirstName(newProfile.firstName);
-      setDraftLastName(newProfile.lastName);
-      setDraftEmail(newProfile.email);
-    }
+    syncFromUserObject(existingUser);
   }
 
   function handleRegistered(newUser) {
     setUser(newUser);
-    if (newUser) {
-      const newProfile = {
-        username: newUser.username || "",
-        firstName: newUser.first_name || "",
-        lastName: newUser.last_name || "",
-        email: newUser.email || "",
-      };
-      setProfile(newProfile);
-      setDraftFirstName(newProfile.firstName);
-      setDraftLastName(newProfile.lastName);
-      setDraftEmail(newProfile.email);
-    }
+    syncFromUserObject(newUser);
   }
 
   async function handleSubmit(e) {
@@ -108,21 +104,36 @@ export default function AccountPage() {
     } else {
       const updated = data.user;
       setUser(updated);
-
-      const newProfile = {
-        username: updated.username || "",
-        firstName: updated.first_name || "",
-        lastName: updated.last_name || "",
-        email: updated.email || "",
-      };
-      setProfile(newProfile);
-
-      // sync draft with confirmed profile
-      setDraftFirstName(newProfile.firstName);
-      setDraftLastName(newProfile.lastName);
-      setDraftEmail(newProfile.email);
+      syncFromUserObject(updated);
       setPassword("");
       setMessage("Profile updated.");
+    }
+  }
+
+  async function handleConfirmDelete() {
+    setDeleting(true);
+    setError(null);
+    try {
+      const res = await apiDeleteMe();
+      if (res.error) {
+        setError(res.error);
+      } else {
+        // user deleted: log out locally and optionally redirect
+        setUser(null);
+        setProfile({
+          username: "",
+          firstName: "",
+          lastName: "",
+          email: "",
+        });
+        setMessage("Your account has been deleted.");
+        router.push("/");   
+      }
+    } catch {
+      setError("Failed to delete account. Please try again.");
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
     }
   }
 
@@ -179,7 +190,7 @@ export default function AccountPage() {
             )}
           </div>
 
-          {/* Edit form */}
+          {/* Edit form + danger zone */}
           {user && (
             <div className={styles.accountCard}>
               {error && <div className={styles.errorMessage}>{error}</div>}
@@ -242,10 +253,65 @@ export default function AccountPage() {
                   Save changes
                 </button>
               </form>
+
+              {/* Danger zone */}
+              <div className={styles.accountDangerZoneTitle}>
+                Danger zone
+              </div>
+              <div className={styles.accountDangerText}>
+                Deleting your account is permanent and cannot be undone. This
+                will remove your profile and associated data.
+              </div>
+              <div className={styles.accountDangerBar}>
+                <span></span>
+                <button
+                  type="button"
+                  className={styles.deleteButton}
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  Delete account
+                </button>
+              </div>
             </div>
           )}
         </div>
       </main>
+
+      {showDeleteConfirm && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => !deleting && setShowDeleteConfirm(false)}
+        >
+          <div
+            className={styles.confirmModalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className={styles.confirmTitle}>Delete account?</h2>
+            <p className={styles.confirmText}>
+              This action will permanently delete your account and cannot be
+              undone. Are you sure you want to continue?
+            </p>
+            <div className={styles.confirmActions}>
+              <button
+                type="button"
+                className={styles.confirmCancelButton}
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.confirmDeleteButton}
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "Delete account"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

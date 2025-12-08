@@ -69,3 +69,12 @@ export async function apiUpdateMe(payload) {
 
   return data;
 }
+
+export async function apiDeleteMe() {
+  const res = await fetch(`${API_BASE}/api/me`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  const data = await res.json();
+  return data;
+}
