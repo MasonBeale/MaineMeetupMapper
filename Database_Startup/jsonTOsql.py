@@ -33,7 +33,7 @@ def connect_to_db(host, user, password, database):
             password=password,
             database=database
         )
-        print(f"Connected to database: {database}")
+        # print(f"Connected to database: {database}")
         return connection
     except mysql.connector.Error as e:
         print(f"Error connecting to database: {e}")
@@ -50,7 +50,7 @@ def parse_date(date_string):
         # Return in YYYY-MM-DD format
         return date_obj.strftime('%Y-%m-%d')
     except Exception as e:
-        print(f"  Warning: Could not parse date '{date_string}': {e}")
+        # print(f"  Warning: Could not parse date '{date_string}': {e}")
         return None
 
 
@@ -64,7 +64,7 @@ def parse_time(time_string):
         # Return in HH:MM:SS format
         return time_obj.strftime('%H:%M:%S')
     except Exception as e:
-        print(f"  Warning: Could not parse time '{time_string}': {e}")
+        # print(f"  Warning: Could not parse time '{time_string}': {e}")
         return None
 
 
@@ -85,7 +85,7 @@ def get_or_create_location(cursor, venue_name, street, city, zip_code):
         result = cursor.fetchone()
 
         if result:
-            print(f"    -> Using existing location_id: {result[0]}")
+            # print(f"Using existing location_id: {result[0]}")
             return result[0]
 
         # Location doesn't exist, create it
@@ -95,11 +95,11 @@ def get_or_create_location(cursor, venue_name, street, city, zip_code):
                        """
         cursor.execute(insert_query, (venue_name, street, city, zip_code))
         location_id = cursor.lastrowid
-        print(f"Created new location_id: {location_id} for '{venue_name}'")
+        # print(f"Created new location_id: {location_id} for '{venue_name}'")
         return location_id
 
     except mysql.connector.Error as e:
-        print(f"  Warning: Error handling location '{venue_name}': {e}")
+        # print(f"  Warning: Error handling location '{venue_name}': {e}")
         return None
 
 
@@ -116,7 +116,6 @@ def event_exists(cursor, event_name, event_date):
 
 
 def import_events(json_file, host, user, password, database, skip_duplicates=True):
-    """Import events from JSON file to SQL database"""
 
     # Resolve JSON file path - search multiple locations
     json_path = None
@@ -130,7 +129,7 @@ def import_events(json_file, host, user, password, database, skip_duplicates=Tru
     for path in search_paths:
         if path.exists():
             json_path = path
-            print(f"Found JSON file at: {json_path}")
+            # print(f"Found JSON file at: {json_path}")
             break
     
     if not json_path:
@@ -143,7 +142,7 @@ def import_events(json_file, host, user, password, database, skip_duplicates=Tru
     try:
         with open(json_path, 'r', encoding='utf-8') as f:
             events = json.load(f)
-        print(f"Loaded {len(events)} events from {json_path}")
+        # print(f"Loaded {len(events)} events from {json_path}")
     except json.JSONDecodeError as e:
         print(f"Error: Invalid JSON file: {e}")
         sys.exit(1)
@@ -157,7 +156,7 @@ def import_events(json_file, host, user, password, database, skip_duplicates=Tru
     skipped = 0
     errors = 0
 
-    print(f"\n[INFO] Starting import...")
+    print(f"Starting import...")
 
     for i, event in enumerate(events, 1):
         try:
@@ -175,13 +174,13 @@ def import_events(json_file, host, user, password, database, skip_duplicates=Tru
 
             # Validation
             if not event_name or not event_date:
-                print(f"  [{i}/{len(events)}] [WARN] Skipping event - missing name or date")
+                # print(f"  [{i}/{len(events)}] Skipping event - missing name or date")
                 skipped += 1
                 continue
 
             # Check for duplicates
             if skip_duplicates and event_exists(cursor, event_name, event_date):
-                print(f"  [{i}/{len(events)}] [SKIP] Skipping duplicate: {event_name}")
+                # print(f"  [{i}/{len(events)}] Skipping duplicate: {event_name}")
                 skipped += 1
                 continue
 
@@ -204,10 +203,11 @@ def import_events(json_file, host, user, password, database, skip_duplicates=Tru
 
             inserted += 1
             if inserted % 10 == 0:
-                print(f"  [{i}/{len(events)}]  Imported {inserted} events...")
+                # print(f"  [{i}/{len(events)}]  Imported {inserted} events...")
+                pass
 
         except mysql.connector.Error as e:
-            print(f"  [{i}/{len(events)}]  Error importing event '{event.get('title', 'Unknown')}': {e}")
+            # print(f"  [{i}/{len(events)}]  Error importing event '{event.get('title', 'Unknown')}': {e}")
             errors += 1
             continue
         except Exception as e:
@@ -219,18 +219,18 @@ def import_events(json_file, host, user, password, database, skip_duplicates=Tru
     connection.commit()
 
     # Print summary
-    print(f"\n{'=' * 60}")
+    print(f"{'=' * 60}")
     print(f"Import Summary:")
     print(f"Total events in file: {len(events)}")
     print(f"Successfully imported: {inserted}")
     print(f"Skipped (duplicates): {skipped}")
     print(f"Errors: {errors}")
-    print(f"{'=' * 60}\n")
+    print(f"{'=' * 60}")
 
     # Close connection
     cursor.close()
     connection.close()
-    print(" Database connection closed")
+    # print(" Database connection closed")
 
 
 if __name__ == "__main__":

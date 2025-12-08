@@ -14,14 +14,12 @@ import json
 
 def load_config(config_file='config.ini'):
     config = configparser.ConfigParser()
-
-    # Look for config.ini in several sensible locations (cwd, script dir, parent)
     base_dir = Path(__file__).parent
     possible_paths = [
-        Path(config_file),                    # relative to current working directory
-        base_dir / config_file,               # same directory as this script
-        base_dir.parent / config_file,        # parent directory
-        Path.cwd() / config_file,             # explicit current working directory
+        Path(config_file),
+        base_dir / config_file,
+        base_dir.parent / config_file,
+        Path.cwd() / config_file,
     ]
 
     found = None
@@ -93,7 +91,8 @@ def run_maine_public_scraper():
             [sys.executable, str(scraper_file)],
             capture_output=True,
             text=True,
-            encoding='utf-8'
+            encoding='utf-8',
+            errors='ignore'
         )
         
         # Print the output
@@ -128,17 +127,7 @@ def run_json_to_sql_importer(db_config):
         print("Please run the scraper first to generate maine_events.json")
         return False
     
-    # Count events in JSON file
     try:
-        with open(json_file, 'r', encoding='utf-8') as f:
-            events = json.load(f)
-        print(f"Found {len(events)} events in JSON file")
-    except Exception as e:
-        print(f"Error reading JSON file: {e}")
-        return False
-    
-    try:
-        print("Running JSON to SQL importer...")
         result = subprocess.run(
             [
                 sys.executable,
@@ -150,7 +139,8 @@ def run_json_to_sql_importer(db_config):
             ],
             capture_output=True,
             text=True,
-            encoding='utf-8'
+            encoding='utf-8',
+            errors='ignore'
         )
         
         # Print the output
@@ -248,30 +238,25 @@ def setup_database():
 def main():
     success, config = setup_database()
     if not success:
-        print("❌ Database setup failed. Exiting.")
+        print("Database setup failed. Exiting.")
         sys.exit(1)
-    
-    # Ask user if they want to run the scraper
-    print("\n" + "="*60)
+    print("="*60)
     print("Scraper and Importer Options")
     print("="*60)
-    print("1. Run scraper and import data (full process)")
-    print("2. Skip scraper, import existing JSON data only")
+    print("1. Run scraper and import data (full process: can take several minutes)")
+    print("2. Skip scraper, import existing JSON data only (recomended)")
     print("3. Exit (database only setup)")
     
-    choice = input("\nEnter your choice [1/2/3]: ").strip()
+    choice = input("Enter your choice [1/2/3]: ").strip()
     
     if choice == '1':
-        # Step 2: Run scraper
         if not run_maine_public_scraper():
             print("Scraper failed. Trying to import existing data if available...")
         
-        # Step 3: Run importer
         if not run_json_to_sql_importer(config):
             print("Import failed, but database is ready")
     
     elif choice == '2':
-        # Just run the importer with existing data
         if not run_json_to_sql_importer(config):
             print("Import failed, but database is ready")
     
@@ -282,13 +267,6 @@ def main():
         print("Invalid choice. Exiting.")
         sys.exit(1)
     
-    print("\n" + "="*60)
-    print("Setup Complete!")
-    print("="*60)
-    print("Summary:")
-    print("- Database initialized with tables and procedures")
-    print("- Maine Public events scraped (if selected)")
-    print("- Data imported into SQL database (if selected)")
     print("\nYou can now run your Meetup Mapper application!")
 
 if __name__ == "__main__":
