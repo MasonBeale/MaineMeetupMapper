@@ -89,8 +89,8 @@ const Header = ({
               <Link href="/Analytics" className={styles.navLink}>Analytics</Link>
               {isLoggedIn ? (
                 <>
-                  <Link href="Account" className={styles.navLink}>My Account</Link>
-                  <Link href="Favorites" className={styles.navLink}>Favorites</Link>
+                  <Link href="/Account" className={styles.navLink}>My Account</Link>
+                  <Link href="/Favorites" className={styles.navLink}>Favorites</Link>
                   <button
                     type="button"
                     onClick={async () => {
