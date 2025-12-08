@@ -556,7 +556,6 @@
   letter-spacing: 0.3px;
 }
 
-/* Main value display */
 .integer-main {
   display: flex;
   align-items: baseline;
@@ -799,20 +798,18 @@
   font-weight: 500;
 }
 
-/* Reset button styling */
 .control-btn.reset {
   background: linear-gradient(135deg, #9e9e9e, #616161);
   color: white;
   grid-column: 1 / -1;
 }
 
-/* Absolute value badge */
 .property-badge.absolute {
   background: linear-gradient(135deg, #ff9800, #f57c00);
   color: white;
 }
 
-/* Responsive adjustments */
+
 @media (max-width: 480px) {
   .integer-display {
     max-width: 100%;
@@ -825,7 +822,8 @@
   
   .integer-controls {
     grid-template-columns: 1fr;
-=======
+  }
+}
 .modalOverlay {
   position: fixed;
   top: 0;
