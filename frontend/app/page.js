@@ -6,6 +6,8 @@ import Link from "next/link";
 import Header from "./components/Header";
 import styles from "./page.module.css";
 import { apiMe, apiLogout } from "./lib/api";
+import { useRouter } from "next/navigation";
+
 
 export default function Home() {
   const [events, setEvents] = useState([]);
@@ -15,6 +17,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchUser() {
@@ -59,6 +62,7 @@ export default function Home() {
   async function handleLogout() {
     await apiLogout();
     setUser(null);
+    router.push("/"); 
   }
 
   function handleLoggedIn(existingUser) {
