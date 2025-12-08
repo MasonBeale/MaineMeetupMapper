@@ -1,94 +1,251 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { apiMe, apiUpdateMe } from "../lib/api";
+import { apiMe, apiLogout, apiUpdateMe } from "../lib/api";
+import Header from "../components/Header";
+import styles from "../page.module.css";
 
 export default function AccountPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  // Saved profile (what the server has confirmed)
+  const [profile, setProfile] = useState({
+    username: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+  });
+
+  // Draft values (what the user is editing)
+  const [draftFirstName, setDraftFirstName] = useState("");
+  const [draftLastName, setDraftLastName] = useState("");
+  const [draftEmail, setDraftEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
-    async function loadUser() {
+    async function fetchUser() {
       const me = await apiMe();
-      if (!me || me.error) {
-        router.push("/login");
-        return;
+      console.log("Before PUT, apiMe says:", me);
+
+      setUser(me);
+      if (me) {
+        const newProfile = {
+          username: me.username || "",
+          firstName: me.first_name || "",
+          lastName: me.last_name || "",
+          email: me.email || "",
+        };
+        setProfile(newProfile);
+
+        // initialize draft from profile
+        setDraftFirstName(newProfile.firstName);
+        setDraftLastName(newProfile.lastName);
+        setDraftEmail(newProfile.email);
       }
-      setEmail(me.email || "");
-      setFirstName(me.first_name || "");
-      setLastName(me.last_name || "");
-      setLoading(false);
+      setLoadingUser(false);
     }
-    loadUser();
-  }, [router]);
+    fetchUser();
+  }, []);
+
+  async function handleLogout() {
+    await apiLogout();
+    setUser(null);
+  }
+
+  function handleLoggedIn(existingUser) {
+    setUser(existingUser);
+    if (existingUser) {
+      const newProfile = {
+        username: existingUser.username || "",
+        firstName: existingUser.first_name || "",
+        lastName: existingUser.last_name || "",
+        email: existingUser.email || "",
+      };
+      setProfile(newProfile);
+      setDraftFirstName(newProfile.firstName);
+      setDraftLastName(newProfile.lastName);
+      setDraftEmail(newProfile.email);
+    }
+  }
+
+  function handleRegistered(newUser) {
+    setUser(newUser);
+    if (newUser) {
+      const newProfile = {
+        username: newUser.username || "",
+        firstName: newUser.first_name || "",
+        lastName: newUser.last_name || "",
+        email: newUser.email || "",
+      };
+      setProfile(newProfile);
+      setDraftFirstName(newProfile.firstName);
+      setDraftLastName(newProfile.lastName);
+      setDraftEmail(newProfile.email);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
     setMessage(null);
-    const data = await apiUpdateMe({
-      email,
-      first_name: firstName,
-      last_name: lastName,
-    });
+
+    const payload = {
+      first_name: draftFirstName,
+      last_name: draftLastName,
+      email: draftEmail,
+    };
+    if (password.trim()) {
+      payload.password = password.trim();
+    }
+
+    const data = await apiUpdateMe(payload);
     if (data.error) {
       setError(data.error);
     } else {
+      const updated = data.user;
+      setUser(updated);
+
+      const newProfile = {
+        username: updated.username || "",
+        firstName: updated.first_name || "",
+        lastName: updated.last_name || "",
+        email: updated.email || "",
+      };
+      setProfile(newProfile);
+
+      // sync draft with confirmed profile
+      setDraftFirstName(newProfile.firstName);
+      setDraftLastName(newProfile.lastName);
+      setDraftEmail(newProfile.email);
+      setPassword("");
       setMessage("Profile updated.");
     }
   }
 
-  if (loading) {
-    return <div style={{ padding: "24px" }}>Loading...</div>;
-  }
-
   return (
-    <div style={{ padding: "24px" }}>
-      <h1>Account</h1>
-      {error && <div style={{ color: "red" }}>{error}</div>}
-      {message && <div style={{ color: "green" }}>{message}</div>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "8px" }}>
-          <label>
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={{ display: "block", width: "100%", marginTop: "4px" }}
-            />
-          </label>
+    <div className={styles.page}>
+      <Header
+        searchTerm={""}
+        onSearchChange={() => {}}
+        filter={"all"}
+        onFilterChange={() => {}}
+        userName={profile.username || null}
+        onLogout={handleLogout}
+        onRegistered={handleRegistered}
+        onLoggedIn={handleLoggedIn}
+      />
+
+      <main className={styles.main}>
+        <div className={styles.accountContainer}>
+          {/* Current profile summary */}
+          <div className={styles.accountCard}>
+            <h1 className={styles.accountTitle}>My Account</h1>
+
+            {loadingUser ? (
+              <div className={styles.loading}>Loading profile...</div>
+            ) : !user ? (
+              <div className={styles.error}>You are not logged in.</div>
+            ) : (
+              <div className={styles.accountSummaryGrid}>
+                <div>
+                  <div className={styles.accountSummaryLabel}>Username</div>
+                  <div className={styles.accountSummaryValue}>
+                    {profile.username}
+                  </div>
+                </div>
+                <div>
+                  <div className={styles.accountSummaryLabel}>Email</div>
+                  <div className={styles.accountSummaryValue}>
+                    {profile.email}
+                  </div>
+                </div>
+                <div>
+                  <div className={styles.accountSummaryLabel}>First name</div>
+                  <div className={styles.accountSummaryValue}>
+                    {profile.firstName || "—"}
+                  </div>
+                </div>
+                <div>
+                  <div className={styles.accountSummaryLabel}>Last name</div>
+                  <div className={styles.accountSummaryValue}>
+                    {profile.lastName || "—"}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Edit form */}
+          {user && (
+            <div className={styles.accountCard}>
+              {error && <div className={styles.errorMessage}>{error}</div>}
+
+              {message && (
+                <div className={styles.accountSuccessMessage}>{message}</div>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>
+                    Email
+                    <input
+                      type="email"
+                      value={draftEmail}
+                      onChange={(e) => setDraftEmail(e.target.value)}
+                      className={styles.formInput}
+                    />
+                  </label>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>
+                    First name
+                    <input
+                      type="text"
+                      value={draftFirstName}
+                      onChange={(e) => setDraftFirstName(e.target.value)}
+                      className={styles.formInput}
+                    />
+                  </label>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>
+                    Last name
+                    <input
+                      type="text"
+                      value={draftLastName}
+                      onChange={(e) => setDraftLastName(e.target.value)}
+                      className={styles.formInput}
+                    />
+                  </label>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>
+                    New password (optional)
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className={styles.formInput}
+                      placeholder="Leave blank to keep current password"
+                    />
+                  </label>
+                </div>
+
+                <button type="submit" className={styles.submitButton}>
+                  Save changes
+                </button>
+              </form>
+            </div>
+          )}
         </div>
-        <div style={{ marginBottom: "8px" }}>
-          <label>
-            First name
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              style={{ display: "block", width: "100%", marginTop: "4px" }}
-            />
-          </label>
-        </div>
-        <div style={{ marginBottom: "8px" }}>
-          <label>
-            Last name
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              style={{ display: "block", width: "100%", marginTop: "4px" }}
-            />
-          </label>
-        </div>
-        <button type="submit">Save changes</button>
-      </form>
+      </main>
     </div>
   );
 }

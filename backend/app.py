@@ -9,7 +9,7 @@ import os
 app = Flask(__name__)
 #Session
 app.config["SESSION_COOKIE_SAMESITE"] = "None"
-app.config["SESSION_COOKIE_SECURE"] = False  # True if running over HTTPS
+app.config["SESSION_COOKIE_SECURE"] = True  # True if running over HTTPS
 
 # Config
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")  # update for security
@@ -81,39 +81,108 @@ def register():
 
 @app.route("/api/login", methods=["POST"])
 def login():
-    data = request.get_json() or {}
-    username_or_email = data.get("username") 
+    # 1. Get data from frontend
+    print("HIT /api/login")
+    data = request.get_json()
+    username_or_email = data.get("username")
     password = data.get("password")
+    print("LOGIN payload:", username_or_email)
 
-    if not username_or_email or not password:
-        return jsonify({"error": "Missing credentials"}), 400
-
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor) 
-    cursor.execute(
-        "SELECT user_id, username, email, password_hash FROM User WHERE username = %s OR email = %s",
-        (username_or_email, username_or_email)
-    )
-    user = cursor.fetchone()
+    # 2. Query database for user
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    # Assuming you are logging in with 'username'
+    cursor.execute("SELECT * FROM User WHERE username = %s", (username_or_email,)) 
+    user = cursor.fetchone() # user will be the dictionary if found, or None if not
     cursor.close()
+    print("LOGIN user row:", user)
 
-    if not user or not bcrypt.check_password_hash(user['password_hash'], password):
-        return jsonify({"error": "Invalid credentials"}), 401
+    if not user:
+        print("LOGIN: no user found")
+        return jsonify({"error": "Invalid username or password"}), 401
 
-    session["user_id"] = user["user_id"]
-    session["username"] = user["username"]
+    # IMPORTANT: inspect the stored hash once
+    print("LOGIN stored hash:", user["password_hash"])
 
-    return jsonify({
-        "user": {
-            "user_id": user["user_id"],
-            "username": user["username"],
-            "email": user["email"]
-        }
-    }), 200
+    # 3. Check credentials
+    if bcrypt.check_password_hash(user["password_hash"], password):
+        # SUCCESS! Set session and return JSON.
+        session['user_id'] = user['user_id']
+        print("LOGIN session user_id set to:", session.get("user_id"))
+        return jsonify({
+            "user": {
+                "user_id": user["user_id"],
+                "username": user["username"],
+                "email": user["email"],
+                "first_name": user["first_name"],
+                "last_name": user["last_name"],
+            }
+        }), 200
+    else:
+        # FAILURE! Return JSON error.
+        print("LOGIN failed")
+        return jsonify({"error": "Invalid username or password"}), 401
+
 
 @app.post("/api/logout")
 def logout():
     session.clear()
     return jsonify({"message": "Logged out"}), 200
+
+@app.route("/api/me", methods=["PUT"])
+def update_me():
+    print("DEBUG: Received request to /api/me with data:", request.get_json())
+    user_id = session.get("user_id")
+    print("DEBUG: Session user_id:", user_id)
+    if not user_id:
+        return jsonify({"user": None}), 200
+
+    data = request.get_json() or {}
+    first_name = data.get("first_name")
+    last_name = data.get("last_name")
+    new_password = data.get("password")
+    new_email = data.get("email")  # NEW
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    fields = []
+    params = []
+
+    if first_name is not None:
+      fields.append("first_name = %s")
+      params.append(first_name)
+
+    if last_name is not None:
+      fields.append("last_name = %s")
+      params.append(last_name)
+
+    if new_email is not None:      # NEW
+      fields.append("email = %s")
+      params.append(new_email)
+
+    if new_password:
+      pw_hash = bcrypt.generate_password_hash(new_password).decode("utf-8")
+      fields.append("password_hash = %s")
+      params.append(pw_hash)
+
+    if not fields:
+      cursor.close()
+      return jsonify({"error": "No changes provided"}), 400
+
+    params.append(user_id)
+    query = f"UPDATE User SET {', '.join(fields)} WHERE user_id = %s"
+    print(f"DEBUG: SQL Query: {query}")
+    print(f"DEBUG: SQL Params: {tuple(params)}")
+
+    cursor.execute(query, tuple(params))
+    mysql.connection.commit()
+
+    cursor.execute(
+      "SELECT user_id, username, email, first_name, last_name FROM User WHERE user_id = %s",
+      (user_id,),
+    )
+    user = cursor.fetchone()
+    cursor.close()
+    return jsonify({"user": user}), 200
 
 @app.route("/api/me", methods=["GET"])
 def me():
@@ -122,7 +191,7 @@ def me():
         return jsonify({"user": None}), 200
 
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("SELECT user_id, username, email FROM User WHERE user_id = %s", (user_id,))
+    cursor.execute("SELECT user_id, username, first_name, last_name, email FROM User WHERE user_id = %s", (user_id,))
     user = cursor.fetchone()
     cursor.close()
 

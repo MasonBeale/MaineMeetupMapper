@@ -626,6 +626,63 @@
   font-size: 0.9rem;
 }
 
+.accountContainer {
+  max-width: 600px;
+  margin: 3rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.accountCard {
+  background: rgba(20, 20, 22, 0.9);
+  border-radius: 24px;
+  padding: 1.75rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+}
+
+.accountTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffffff, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.accountSummaryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+}
+
+.accountSummaryLabel {
+  opacity: 0.6;
+  margin-bottom: 0.25rem;
+}
+
+.accountSummaryValue {
+  font-weight: 600;
+}
+
+.accountSuccessMessage {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #6ee7b7;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.accountEmailReadonly {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 @media (max-width: 480px) {
   .modalContent {
     padding: 2rem 1.5rem;

@@ -19,19 +19,9 @@ export async function apiRegister({ username, email, password }) {
       body: JSON.stringify({ username, password }),
     });
     
-    let data = null;
-    try {
-      data = await res.json();
-    } catch (e) {
-      // backend returned HTML error; surface a generic error
-      return { error: "Login failed (non-JSON response)" };
-    }
-  
-    if (!res.ok) {
-      return { error: data.error || "Login failed" };
-    }
-  
-    return data; // { user: {...} }
+    const data = await res.json().catch(() => ({ error: "Login failed" }));
+    if (!res.ok) return { error: data.error || "Login failed" };
+    return data;
   }
 
   export async function apiLogout() {
@@ -43,21 +33,39 @@ export async function apiRegister({ username, email, password }) {
   }
 
 export async function apiMe() {
+  try {
     const res = await fetch(`${API_BASE}/api/me`, {
       method: "GET",
       credentials: "include",
     });
-    if (!res.ok) return None;
+    console.log("apiMe status:", res.status);
     const data = await res.json();
-    return data.user; 
+    console.log("apiMe data:", data);
+    return data.user || null;
+  } catch (e) {
+    console.error("apiMe fetch error:", e);
+    return null;
   }
+}
 
-export async function apiUpdateMe(body) {
+export async function apiUpdateMe(payload) {
   const res = await fetch(`${API_BASE}/api/me`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(body),
+    credentials: "include",              // <-- must be here
+    body: JSON.stringify(payload),
   });
-  return res.json();
+
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    return { error: "Failed to update profile" };
+  }
+
+  if (!res.ok) {
+    return { error: data.error || "Failed to update profile" };
+  }
+
+  return data;
 }
