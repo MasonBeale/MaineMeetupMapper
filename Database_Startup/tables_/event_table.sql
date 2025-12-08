@@ -1,7 +1,7 @@
 -- Author Philip Lane and Claude Sonnet 4.5
 -- A small SQL schema for creating the Event table for Maine Meetup Mapper.
 
-CREATE TABLE Event (
+CREATE TABLE IF NOT EXISTS Event (
     event_id INT PRIMARY KEY AUTO_INCREMENT,
     event_name VARCHAR(150) NOT NULL,
     event_date DATE NOT NULL,

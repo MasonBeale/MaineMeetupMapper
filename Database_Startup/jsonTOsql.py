@@ -10,21 +10,33 @@ import json
 import mysql.connector
 from datetime import datetime
 import sys
+from pathlib import Path
+import argparse
 
 
-def connect_to_db():
-    """Connect to MySQL database"""
+def parse_args():
+    """Parse command-line arguments for database connection"""
+    parser = argparse.ArgumentParser(description='Import JSON events to SQL database')
+    parser.add_argument('--host', default='localhost', help='Database host')
+    parser.add_argument('--user', default='root', help='Database user')
+    parser.add_argument('--password', required=True, help='Database password')
+    parser.add_argument('--database', default='mmmdb', help='Database name')
+    return parser.parse_args()
+
+
+def connect_to_db(host, user, password, database):
+    """Connect to MySQL database using provided credentials"""
     try:
         connection = mysql.connector.connect(
-            host='localhost',  # Change if needed
-            user='root',  # Change to your MySQL username
-            password='password',  # Change to your MySQL password
-            database='meetup_mapper'
+            host=host,
+            user=user,
+            password=password,
+            database=database
         )
-        print("✓ Connected to database successfully")
+        # print(f"Connected to database: {database}")
         return connection
     except mysql.connector.Error as e:
-        print(f"❌ Error connecting to database: {e}")
+        print(f"Error connecting to database: {e}")
         sys.exit(1)
 
 
@@ -38,7 +50,7 @@ def parse_date(date_string):
         # Return in YYYY-MM-DD format
         return date_obj.strftime('%Y-%m-%d')
     except Exception as e:
-        print(f"  Warning: Could not parse date '{date_string}': {e}")
+        # print(f"  Warning: Could not parse date '{date_string}': {e}")
         return None
 
 
@@ -52,7 +64,7 @@ def parse_time(time_string):
         # Return in HH:MM:SS format
         return time_obj.strftime('%H:%M:%S')
     except Exception as e:
-        print(f"  Warning: Could not parse time '{time_string}': {e}")
+        # print(f"  Warning: Could not parse time '{time_string}': {e}")
         return None
 
 
@@ -73,7 +85,7 @@ def get_or_create_location(cursor, venue_name, street, city, zip_code):
         result = cursor.fetchone()
 
         if result:
-            print(f"    ↪ Using existing location_id: {result[0]}")
+            # print(f"Using existing location_id: {result[0]}")
             return result[0]
 
         # Location doesn't exist, create it
@@ -83,11 +95,11 @@ def get_or_create_location(cursor, venue_name, street, city, zip_code):
                        """
         cursor.execute(insert_query, (venue_name, street, city, zip_code))
         location_id = cursor.lastrowid
-        print(f"    ✓ Created new location_id: {location_id} for '{venue_name}'")
+        # print(f"Created new location_id: {location_id} for '{venue_name}'")
         return location_id
 
     except mysql.connector.Error as e:
-        print(f"  Warning: Error handling location '{venue_name}': {e}")
+        # print(f"  Warning: Error handling location '{venue_name}': {e}")
         return None
 
 
@@ -103,23 +115,40 @@ def event_exists(cursor, event_name, event_date):
     return cursor.fetchone() is not None
 
 
-def import_events(json_file, skip_duplicates=True):
-    """Import events from JSON file to SQL database"""
+def import_events(json_file, host, user, password, database, skip_duplicates=True):
+
+    # Resolve JSON file path - search multiple locations
+    json_path = None
+    search_paths = [
+        Path(json_file),                           # exact path provided
+        Path(__file__).parent / json_file,         # same directory as script
+        Path(__file__).parent.parent / json_file,  # parent directory (repo root)
+        Path.cwd() / json_file,                    # current working directory
+    ]
+    
+    for path in search_paths:
+        if path.exists():
+            json_path = path
+            # print(f"Found JSON file at: {json_path}")
+            break
+    
+    if not json_path:
+        print(f"Error: File '{json_file}' not found in any of:")
+        for path in search_paths:
+            print(f"   - {path}")
+        sys.exit(1)
 
     # Load JSON data
     try:
-        with open(json_file, 'r', encoding='utf-8') as f:
+        with open(json_path, 'r', encoding='utf-8') as f:
             events = json.load(f)
-        print(f"✓ Loaded {len(events)} events from {json_file}")
-    except FileNotFoundError:
-        print(f"❌ Error: File '{json_file}' not found")
-        sys.exit(1)
+        # print(f"Loaded {len(events)} events from {json_path}")
     except json.JSONDecodeError as e:
-        print(f"❌ Error: Invalid JSON file: {e}")
+        print(f"Error: Invalid JSON file: {e}")
         sys.exit(1)
 
     # Connect to database
-    connection = connect_to_db()
+    connection = connect_to_db(host, user, password, database)
     cursor = connection.cursor()
 
     # Statistics
@@ -127,7 +156,7 @@ def import_events(json_file, skip_duplicates=True):
     skipped = 0
     errors = 0
 
-    print(f"\n📥 Starting import...")
+    print(f"Starting import...")
 
     for i, event in enumerate(events, 1):
         try:
@@ -145,13 +174,13 @@ def import_events(json_file, skip_duplicates=True):
 
             # Validation
             if not event_name or not event_date:
-                print(f"  [{i}/{len(events)}] ⚠️  Skipping event - missing name or date")
+                # print(f"  [{i}/{len(events)}] Skipping event - missing name or date")
                 skipped += 1
                 continue
 
             # Check for duplicates
             if skip_duplicates and event_exists(cursor, event_name, event_date):
-                print(f"  [{i}/{len(events)}] ⏭️  Skipping duplicate: {event_name}")
+                # print(f"  [{i}/{len(events)}] Skipping duplicate: {event_name}")
                 skipped += 1
                 continue
 
@@ -174,14 +203,15 @@ def import_events(json_file, skip_duplicates=True):
 
             inserted += 1
             if inserted % 10 == 0:
-                print(f"  [{i}/{len(events)}] ✓ Imported {inserted} events...")
+                # print(f"  [{i}/{len(events)}]  Imported {inserted} events...")
+                pass
 
         except mysql.connector.Error as e:
-            print(f"  [{i}/{len(events)}] ❌ Error importing event '{event.get('title', 'Unknown')}': {e}")
+            # print(f"  [{i}/{len(events)}]  Error importing event '{event.get('title', 'Unknown')}': {e}")
             errors += 1
             continue
         except Exception as e:
-            print(f"  [{i}/{len(events)}] ❌ Unexpected error: {e}")
+            print(f"  [{i}/{len(events)}]  Unexpected error: {e}")
             errors += 1
             continue
 
@@ -189,28 +219,33 @@ def import_events(json_file, skip_duplicates=True):
     connection.commit()
 
     # Print summary
-    print(f"\n{'=' * 60}")
-    print(f"📊 Import Summary:")
-    print(f"   Total events in file: {len(events)}")
-    print(f"   ✓ Successfully imported: {inserted}")
-    print(f"   ⏭️  Skipped (duplicates): {skipped}")
-    print(f"   ❌ Errors: {errors}")
-    print(f"{'=' * 60}\n")
+    print(f"{'=' * 60}")
+    print(f"Import Summary:")
+    print(f"Total events in file: {len(events)}")
+    print(f"Successfully imported: {inserted}")
+    print(f"Skipped (duplicates): {skipped}")
+    print(f"Errors: {errors}")
+    print(f"{'=' * 60}")
 
     # Close connection
     cursor.close()
     connection.close()
-    print("✓ Database connection closed")
+    # print(" Database connection closed")
 
 
 if __name__ == "__main__":
+    # Parse command-line arguments
+    args = parse_args()
+    
     # Configuration
-    JSON_FILE = 'maine_events.json'  # Your JSON file name
+    JSON_FILE = './maine_events.json'  # Your JSON file name
     SKIP_DUPLICATES = True  # Set to False to allow duplicate events
 
-    print("=" * 60)
-    print("Maine Events JSON to SQL Importer")
-    print("=" * 60)
-
-
-    import_events(JSON_FILE, skip_duplicates=SKIP_DUPLICATES)
+    import_events(
+        JSON_FILE,
+        host=args.host,
+        user=args.user,
+        password=args.password,
+        database=args.database,
+        skip_duplicates=SKIP_DUPLICATES
+    )
