@@ -30,7 +30,6 @@ def load_config(config_file='config.ini'):
             config.read(path)
             if 'database' in config:
                 found = path
-                print(f"Found config at: {path}")
                 break
 
     if not found:
@@ -111,25 +110,21 @@ def run_maine_public_scraper():
             return False
             
     except Exception as e:
-        print(f"❌ Error running scraper: {e}")
+        print(f"Error running scraper: {e}")
         return False
 
-def run_json_to_sql_importer():
-    """Run the JSON to SQL importer script"""
-    print("\n" + "="*60)
-    print("Step 3: Importing JSON data to SQL Database")
-    print("="*60)
+def run_json_to_sql_importer(db_config):
     
     importer_file = Path(__file__).parent / 'jsonTOsql.py'
     json_file = Path(__file__).parent / 'maine_events.json'
     
     if not importer_file.exists():
-        print(f"❌ Importer file not found: {importer_file}")
+        print(f"Importer file not found: {importer_file}")
         print("Please ensure jsonTOsql.py is in the same directory.")
         return False
     
     if not json_file.exists():
-        print(f"❌ JSON file not found: {json_file}")
+        print(f"JSON file not found: {json_file}")
         print("Please run the scraper first to generate maine_events.json")
         return False
     
@@ -139,15 +134,20 @@ def run_json_to_sql_importer():
             events = json.load(f)
         print(f"Found {len(events)} events in JSON file")
     except Exception as e:
-        print(f"❌ Error reading JSON file: {e}")
+        print(f"Error reading JSON file: {e}")
         return False
     
     try:
         print("Running JSON to SQL importer...")
-        
-        # Run the importer as a subprocess
         result = subprocess.run(
-            [sys.executable, str(importer_file)],
+            [
+                sys.executable,
+                str(importer_file),
+                '--host', db_config['host'],
+                '--user', db_config['user'],
+                '--password', db_config['password'],
+                '--database', db_config['database']
+            ],
             capture_output=True,
             text=True,
             encoding='utf-8'
@@ -160,21 +160,17 @@ def run_json_to_sql_importer():
             print("Importer stderr:", result.stderr)
         
         if result.returncode == 0:
-            print("✅ JSON to SQL import completed successfully!")
+            print("JSON to SQL import completed successfully!")
             return True
         else:
-            print(f"❌ JSON to SQL import failed with exit code: {result.returncode}")
+            print(f"JSON to SQL import failed with exit code: {result.returncode}")
             return False
             
     except Exception as e:
-        print(f"❌ Error running importer: {e}")
+        print(f"Error running importer: {e}")
         return False
 
 def setup_database():
-    """Initialize the database with tables and procedures"""
-    print("="*60)
-    print("Step 1: Initializing Database")
-    print("="*60)
     
     # Load configuration
     try:
@@ -182,7 +178,7 @@ def setup_database():
     except Exception as e:
         print(f"Error loading config file: {e}")
         print("Make sure config.ini exists with proper database configuration")
-        return False
+        return False, None
     
     # Connect to MySQL server
     try:
@@ -205,11 +201,11 @@ def setup_database():
         )
         mycursor = mydb.cursor()
         
-        print(f"✅ Successfully connected to database: {config['database']}")
+        print(f"Successfully connected to database: {config['database']}")
         
     except mysql.connector.Error as err:
-        print(f"❌ Database connection error: {err}")
-        return False
+        print(f"Database connection error: {err}")
+        return False, None
     
     # Execute table creation scripts (use script directory as base)
     base_dir = Path(__file__).parent
@@ -226,8 +222,8 @@ def setup_database():
     print("Creating tables...")
     for file in table_files:
         if not file.exists():
-            print(f"❌ Table SQL file not found: {file}")
-            return False
+            print(f"Table SQL file not found: {file}")
+            return False, None
     
     execute_sql_files(table_files, mycursor)
     
@@ -235,28 +231,23 @@ def setup_database():
     print("Creating stored procedures...")
     procedure_files = find_sql_files(str(base_dir / 'procedures_/'))
     if not procedure_files:
-        print("⚠️  No stored procedure files found in procedures_/ directory")
+        print("No stored procedure files found in procedures_/ directory")
     else:
         execute_sql_files(procedure_files, mycursor)
     
     # Commit changes
     mydb.commit()
-    print("✅ Database initialization completed successfully!")
+    print("Database initialization completed successfully!")
     
     # Close connections
     mycursor.close()
     mydb.close()
     
-    return True
+    return True, config
 
 def main():
-    """Main orchestration function"""
-    print("="*60)
-    print("Meetup Mapper Database Setup and Data Import")
-    print("="*60)
-    
-    # Step 1: Setup database
-    if not setup_database():
+    success, config = setup_database()
+    if not success:
         print("❌ Database setup failed. Exiting.")
         sys.exit(1)
     
@@ -273,22 +264,22 @@ def main():
     if choice == '1':
         # Step 2: Run scraper
         if not run_maine_public_scraper():
-            print("❌ Scraper failed. Trying to import existing data if available...")
+            print("Scraper failed. Trying to import existing data if available...")
         
         # Step 3: Run importer
-        if not run_json_to_sql_importer():
-            print("⚠️  Import failed, but database is ready")
+        if not run_json_to_sql_importer(config):
+            print("Import failed, but database is ready")
     
     elif choice == '2':
         # Just run the importer with existing data
-        if not run_json_to_sql_importer():
-            print("⚠️  Import failed, but database is ready")
+        if not run_json_to_sql_importer(config):
+            print("Import failed, but database is ready")
     
     elif choice == '3':
-        print("✅ Database setup complete. Exiting.")
+        print("Database setup complete. Exiting.")
     
     else:
-        print("❌ Invalid choice. Exiting.")
+        print("Invalid choice. Exiting.")
         sys.exit(1)
     
     print("\n" + "="*60)

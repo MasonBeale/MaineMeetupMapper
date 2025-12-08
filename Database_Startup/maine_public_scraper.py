@@ -293,7 +293,6 @@ def scrape_event_details(event_url):
 
         response = requests.get(event_url, headers=headers, timeout=10)
         soup = BeautifulSoup(response.text, 'html.parser')
-
         location_data = {
             'venue_name': None,
             'street': None,
@@ -623,8 +622,8 @@ def save_progress(page, last_event_url):
 
 def load_existing_events():
     """Load existing events from main file"""
-    if os.path.exists('maine_events.json'):
-        with open('maine_events.json', 'r', encoding='utf-8') as f:
+    if os.path.exists('./maine_events.json'):
+        with open('./maine_events.json', 'r', encoding='utf-8') as f:
             return json.load(f)
     return []
 
@@ -644,7 +643,7 @@ def scrape_pages_concurrent(base_url, start_page, end_page, scrape_details=True)
         page_batches.append(batch)
 
     detail_status = "with location details" if scrape_details else "without location details"
-    print(f"\n📊 Scraping Strategy:")
+    print(f"\n Scraping Strategy:")
     print(f"   Pages: {num_pages}")
     print(f"   Workers: {max_workers}")
     print(f"   Batch size: {batch_size} pages/worker")
@@ -687,10 +686,10 @@ def scrape_pages_concurrent(base_url, start_page, end_page, scrape_details=True)
                     if unique_events:
                         save_progress(page_num, unique_events[-1]['url'])
 
-                print(f"  Batch {completed}/{len(page_batches)} complete\n")
+                print(f"Batch {completed}/{len(page_batches)} complete\n")
 
             except Exception as e:
-                print(f"❌ Error processing batch {batch}: {e}\n")
+                print(f"Error processing batch {batch}: {e}\n")
 
     return all_events
 
@@ -740,7 +739,7 @@ def scrape_with_update_mode(base_url, max_workers=5):
     return all_new_events
 
 
-def save_to_json(events, filename='maine_events.json', append_mode=False):
+def save_to_json(events, filename='./maine_events.json', append_mode=False):
     """Save events to JSON file"""
     if append_mode and os.path.exists(filename):
         existing_events = load_existing_events()
@@ -779,8 +778,8 @@ if __name__ == "__main__":
     choice = input("\nEnter your choice [1/2/3]: ").strip()
 
     if choice == '1':
-        print("\n🚀 Starting full scrape with concurrent processing...")
-        print("⚠️  With location scraping enabled, this will take 30-60 minutes")
+        print("\n Starting full scrape with concurrent processing...")
+        print("  With location scraping enabled, this will take 30-60 minutes")
 
         # Full scrape
         events = scrape_pages_concurrent(base_url, 1, 400, scrape_details=True)
@@ -790,7 +789,7 @@ if __name__ == "__main__":
         num_pages = input("How many pages to scrape? ").strip()
         try:
             num_pages = int(num_pages)
-            print(f"\n🚀 Starting scrape of {num_pages} pages...")
+            print(f"\n Starting scrape of {num_pages} pages...")
             events = scrape_pages_concurrent(base_url, 1, num_pages, scrape_details=True)
             save_to_json(events, append_mode=False)
         except ValueError:
@@ -798,7 +797,7 @@ if __name__ == "__main__":
             exit(1)
 
     elif choice == '3':
-        print("\n🔄 Starting update scrape...")
+        print("\n Starting update scrape...")
         events = scrape_with_update_mode(base_url, max_workers=5)
         save_to_json(events, append_mode=True)
 
@@ -807,4 +806,4 @@ if __name__ == "__main__":
         exit(1)
 
 
-    print(f"\n✅ Scraping complete! Total new events: {len(events)}")
+    print(f"\n Scraping complete! Total new events: {len(events)}")
