@@ -37,10 +37,8 @@ def execute_sql_files(files):
         with open(file, 'r') as f:
             sql_script = f.read()
             mycursor.execute(sql_script)
+ 
 
-# This is a temp version of logans Location table creation
-mycursor.execute("CREATE TABLE IF NOT EXISTS Location (location_id INT PRIMARY KEY AUTO_INCREMENT, venue_name VARCHAR(255) NOT NULL, address VARCHAR(255), city VARCHAR(100), zip_code VARCHAR(10));")
-
-execute_sql_files([Path('./tables_/User_Table.sql'), Path('./tables_/event_table.sql'), Path('./tables_/Category_Table.sql'), Path('./tables_/review_table.sql'), Path('./tables_/RSVP_table.sql')])
+execute_sql_files([Path('./tables_/location_Table.sql'), Path('./tables_/User_Table.sql'), Path('./tables_/event_table.sql'), Path('./tables_/Category_Table.sql'), Path('./tables_/review_table.sql'), Path('./tables_/RSVP_table.sql')])
 execute_sql_files(procedure_files)
 mydb.commit()
