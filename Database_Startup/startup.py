@@ -180,6 +180,7 @@ def setup_database():
         mycursor = mydb.cursor()
         
         # Create database if it doesn't exist
+        mycursor.execute(f"DROP DATABASE IF EXISTS `{config['database']}`")
         mycursor.execute(f"CREATE DATABASE IF NOT EXISTS `{config['database']}`")
         
         # Connect to the specific database
