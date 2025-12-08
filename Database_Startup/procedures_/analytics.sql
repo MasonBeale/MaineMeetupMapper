@@ -4,8 +4,8 @@ Alters tables to include analytics attributes
 Creates procedures to update those attributes
 @author Mason Beale
 */
-ALTER TABLE users ADD COLUMN last_login DATETIME;
-ALTER TABLE events ADD COLUMN view_count INT DEFAULT 0;
+ALTER TABLE User ADD COLUMN last_login DATETIME;
+ALTER TABLE Event ADD COLUMN view_count INT DEFAULT 0;
 
 DELIMITER //
 CREATE PROCEDURE IF NOT EXISTS user_login (p_user_id INT)

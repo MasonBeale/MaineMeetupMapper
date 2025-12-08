@@ -208,9 +208,4 @@ if __name__ == "__main__":
     JSON_FILE = 'maine_events.json'  # Your JSON file name
     SKIP_DUPLICATES = True  # Set to False to allow duplicate events
 
-    print("=" * 60)
-    print("Maine Events JSON to SQL Importer")
-    print("=" * 60)
-
-
     import_events(JSON_FILE, skip_duplicates=SKIP_DUPLICATES)
