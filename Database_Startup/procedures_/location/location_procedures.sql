@@ -6,8 +6,6 @@
 -- Purpose: Stored procedures for Location table operations
 -- ============================================================
 
-USE meetup_mapper;
-
 DELIMITER //
 
 -- Procedure to add a new location

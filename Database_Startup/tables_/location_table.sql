@@ -7,15 +7,13 @@
 --          scraped from Eventbrite
 -- ============================================================
 
-USE meetup_mapper;
-
 -- Create Location table
-CREATE TABLE Location (
+CREATE TABLE IF NOT EXISTS Location (
     location_id INT PRIMARY KEY AUTO_INCREMENT,
     venue_name VARCHAR(255) NOT NULL,
     address VARCHAR(255),
     city VARCHAR(100),
-    zip_code VARCHAR(10),
+    zip_code VARCHAR(10)
     CONSTRAINT chk_zip_format CHECK (zip_code REGEXP '^[0-9]{5}$')
 );
 
@@ -64,5 +62,5 @@ by location area.
 */
 
 -- Query with optimization
-EXPLAIN SELECT * FROM Location WHERE zip_code = '04101';
-SELECT * FROM Location WHERE zip_code = '04101';
+-- EXPLAIN SELECT * FROM Location WHERE zip_code = '04101';
+-- SELECT * FROM Location WHERE zip_code = '04101';
