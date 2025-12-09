@@ -1,17 +1,42 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "../page.module.css";
 import Header from "../components/Header";
+import { apiMe, apiLogout } from "../lib/api";
 
 export default function Analytics() {
+  const router = useRouter();
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState("month");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    async function fetchUser() {
+      const me = await apiMe();
+      setUser(me);
+    }
+    fetchUser();
+  }, []);
+
+  async function handleLogout() {
+    await apiLogout();
+    setUser(null);
+    router.push("/");
+  }
+
+  function handleRegistered(newUser) {
+    setUser(newUser);
+  }
+
+  function handleLoggedIn(existingUser) {
+    setUser(existingUser);
+  }
 
   // Add time range selector component
   const TimeRangeSelector = () => (
@@ -144,9 +169,12 @@ export default function Analytics() {
       <Header 
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        filter={filter}
-        onFilterChange={setFilter}
-        userName="KZ"
+        userName={user ? user.username : null}
+        onLogout={handleLogout}
+        onRegistered={handleRegistered}
+        onLoggedIn={handleLoggedIn}
+        showFilters={showFilters}
+        onShowFiltersChange={setShowFilters}
       />
 
       {/* Hero Section */}
