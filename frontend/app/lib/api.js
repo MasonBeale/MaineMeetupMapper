@@ -78,3 +78,57 @@ export async function apiDeleteMe() {
   const data = await res.json();
   return data;
 }
+
+export async function apiGetFavorites() {
+  try {
+    const res = await fetch("http://127.0.0.1:5000/api/favorites", {
+      method: "GET",
+      credentials: "include",
+    });
+
+    console.log("apiGetFavorites status:", res.status);
+
+    if (!res.ok) {
+      // e.g. 401 or 500
+      console.error("apiGetFavorites not OK");
+      return [];
+    }
+
+    const data = await res.json();
+    console.log("apiGetFavorites data:", data);
+
+    // Expecting { events: [...] }
+    if (Array.isArray(data.events)) {
+      return data.events;
+    }
+
+    // Fallbacks if backend returns bare array or different key
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (Array.isArray(data.favorites)) {
+      return data.favorites;
+    }
+
+    return [];
+  } catch (e) {
+    console.error("apiGetFavorites error:", e);
+    return [];
+  }
+}
+
+export async function apiFavorite(eventId) {
+  const res = await fetch(`${API_BASE}/api/favorites/${eventId}`, {
+    method: "POST",
+    credentials: "include",
+  });
+  return res.json();
+}
+
+export async function apiUnfavorite(eventId) {
+  const res = await fetch(`${API_BASE}/api/favorites/${eventId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  return res.json();
+}
