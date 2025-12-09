@@ -3,6 +3,7 @@ from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from backend_analytics import BackendAnalytics
+# from RSVP_grabber import EventRSVPs
 import MySQLdb.cursors
 import os
 import mysql.connector
@@ -534,6 +535,18 @@ def me():
         return jsonify({"user": None}), 200
 
     return jsonify({"user": user}), 200
+
+# @app.route("/api/events/<int:event_id>/rsvps", methods=["GET"])
+# def get_event_rsvps(event_id):
+#     """Get all RSVPs for a specific event"""
+#     rsvp_data = EventRSVPs.get_rsvps_by_event(event_id)
+#     return jsonify(rsvp_data), 200 if rsvp_data.get('success') else 500
+
+# @app.route("/api/events/<int:event_id>/rsvp-stats", methods=["GET"])
+# def get_event_rsvp_stats(event_id):
+#     """Get RSVP statistics for a specific event"""
+#     stats_data = EventRSVPs.get_rsvp_stats(event_id)
+#     return jsonify(stats_data), 200 if stats_data.get('success') else 500
 
 if __name__ == "__main__":
     app.run(debug=True)

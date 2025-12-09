@@ -36,6 +36,22 @@ export default function EventDetail() {
     }
   }, [params.id]);
 
+  // useEffect(() => {
+  //   async function fetchRSVPs() {
+  //     try {
+  //       const res = await fetch("http://127.0.0.1:5000/api/analytics");
+  //       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  //       const data = await res.json();
+  //       setAnalyticsData(data);
+  //     } catch (err) {
+  //       setError(err instanceof Error ? err.message : "Failed to fetch analytics");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  //   fetchAnalytics();
+  // }, []);
+
   const handleRSVP = () => {
     alert("RSVP functionality coming soon!");
   };

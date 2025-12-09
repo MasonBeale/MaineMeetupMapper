@@ -1,0 +1,173 @@
+from pathlib import Path
+import configparser
+import MySQLdb
+
+
+class EventRSVPs:
+    
+    def load_config(config_file='config.ini'):
+        config = configparser.ConfigParser()
+        base_dir = Path(__file__).parent
+        possible_paths = [
+            Path(config_file),
+            base_dir / config_file,
+            base_dir.parent / config_file,
+            base_dir.parent / 'Database_Startup' / config_file,
+            Path.cwd() / config_file,
+        ]
+
+        found = None
+        for path in possible_paths:
+            if Path(path).exists():
+                config.read(path)
+                if 'database' in config:
+                    found = path
+                    break
+
+        if not found:
+            raise FileNotFoundError(
+                "Could not find a valid config.ini with a [database] section. "
+                f"Searched: {', '.join(str(p) for p in possible_paths)}"
+            )
+
+        host = config.get('database', 'host', fallback='localhost')
+        user = config.get('database', 'user', fallback='root')
+        password = config.get('database', 'password', fallback=None)
+        database_name = config.get('database', 'database_name', fallback='mmmdb')
+
+        if not password:
+            raise ValueError(
+                "Missing database configuration in config.ini. Ensure 'password' is set under the [database] section."
+            )
+
+        return {
+            'host': host,
+            'user': user,
+            'password': password,
+            'database': database_name
+        }
+
+    @staticmethod
+    def get_rsvps_by_event(event_id):
+        try:
+            config = EventRSVPs.load_config()
+            connection = MySQLdb.connect(
+                host=config['host'],
+                user=config['user'],
+                passwd=config['password'],
+                db=config['database']
+            )
+            cursor = connection.cursor(MySQLdb.cursors.DictCursor)
+            
+            # Get RSVPs for the specific event with user details
+            query = """
+            SELECT 
+                r.rsvp_id,
+                r.user_id,
+                r.event_id,
+                r.status,
+                r.created_at,
+                u.username,
+                u.email,
+                u.first_name,
+                u.last_name
+            FROM RSVP r
+            JOIN User u ON r.user_id = u.user_id
+            WHERE r.event_id = %s
+            ORDER BY r.created_at DESC
+            """
+            
+            cursor.execute(query, (event_id,))
+            rsvps = cursor.fetchall()
+            
+            # Get event details
+            cursor.execute("SELECT title, description FROM Event WHERE event_id = %s", (event_id,))
+            event = cursor.fetchone()
+            
+            # Get RSVP counts by status
+            status_query = """
+            SELECT 
+                status,
+                COUNT(*) as count
+            FROM RSVP 
+            WHERE event_id = %s 
+            GROUP BY status
+            """
+            cursor.execute(status_query, (event_id,))
+            status_counts = cursor.fetchall()
+            
+            cursor.close()
+            connection.close()
+            
+            return {
+                'event_id': event_id,
+                'event_title': event['title'] if event else 'Unknown Event',
+                'event_description': event['description'] if event else '',
+                'total_rsvps': len(rsvps),
+                'status_counts': {row['status']: row['count'] for row in status_counts},
+                'rsvps': rsvps,
+                'success': True
+            }
+        except Exception as e:
+            print(f"Error fetching RSVPs for event {event_id}: {e}")
+            return {
+                'event_id': event_id,
+                'event_title': '',
+                'event_description': '',
+                'total_rsvps': 0,
+                'status_counts': {},
+                'rsvps': [],
+                'error': str(e),
+                'success': False
+            }
+    
+    @staticmethod
+    def get_rsvp_stats(event_id):
+        """Get only statistics about RSVPs without detailed user info"""
+        try:
+            config = EventRSVPs.load_config()
+            connection = MySQLdb.connect(
+                host=config['host'],
+                user=config['user'],
+                passwd=config['password'],
+                db=config['database']
+            )
+            cursor = connection.cursor(MySQLdb.cursors.DictCursor)
+            
+            # Get RSVP counts by status
+            query = """
+            SELECT 
+                status,
+                COUNT(*) as count
+            FROM RSVP 
+            WHERE event_id = %s 
+            GROUP BY status
+            """
+            
+            cursor.execute(query, (event_id,))
+            status_counts = cursor.fetchall()
+            
+            # Get total RSVPs
+            cursor.execute("SELECT COUNT(*) as total FROM RSVP WHERE event_id = %s", (event_id,))
+            total = cursor.fetchone()['total']
+            
+            cursor.close()
+            connection.close()
+            
+            # Format the response
+            stats = {row['status']: row['count'] for row in status_counts}
+            stats['total'] = total
+            
+            return {
+                'event_id': event_id,
+                'stats': stats,
+                'success': True
+            }
+        except Exception as e:
+            print(f"Error fetching RSVP stats for event {event_id}: {e}")
+            return {
+                'event_id': event_id,
+                'stats': {},
+                'error': str(e),
+                'success': False
+            }
