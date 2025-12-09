@@ -1,4 +1,8 @@
--- updates the rating and comments of an existing RSVP by ID
+/*
+update_RSVP.sql 
+Update procedures for RSVP table
+@author Mason Beale
+*/
 DELIMITER //
 CREATE PROCEDURE IF NOT EXISTS update_RSVP (
     p_review_id INT,

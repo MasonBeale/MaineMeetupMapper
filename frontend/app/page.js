@@ -2,7 +2,14 @@
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import Header from "./components/Header";
 import styles from "./page.module.css";
+import { apiMe, apiLogout } from "./lib/api";
+import { useRouter } from "next/navigation";
+
 
 export default function Home() {
   const router = useRouter();
@@ -15,6 +22,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState("date");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   
@@ -22,6 +30,18 @@ export default function Home() {
   const [displayCount, setDisplayCount] = useState(20);
   const [hasMore, setHasMore] = useState(true);
   const observerTarget = useRef(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    async function fetchUser() {
+      console.log("Calling apiMe...");
+      const me = await apiMe();
+      console.log("apiMe result:", me);
+      setUser(me);
+    }
+    fetchUser();
+  }, []);
+
 
   // Fetch events from backend with all filters
   useEffect(() => {
@@ -46,6 +66,7 @@ export default function Home() {
         setEvents(data.events);
         setTotalEvents(data.total);
         setHasMore(data.events.length < data.total);
+        setEvents(Array.isArray(data) ? data : data.events || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch events");
       } finally {
@@ -108,6 +129,20 @@ export default function Home() {
 
   const hasActiveFilters = searchTerm || selectedCity !== "all" || startDate || endDate || sortBy !== "date";
 
+  function handleRegistered(newUser) {
+    setUser(newUser);
+  }
+
+  async function handleLogout() {
+    await apiLogout();
+    setUser(null);
+    router.push("/"); 
+  }
+
+  function handleLoggedIn(existingUser) {
+    setUser(existingUser);       
+  }
+
   return (
     <div className={styles.page}>
       {/* Header */}
@@ -133,6 +168,16 @@ export default function Home() {
           </div>
         </div>
       </header>
+      <Header 
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filter={filter}
+        onFilterChange={setFilter}
+        userName={user ? user.username : null}
+        onLogout={handleLogout}
+        onRegistered={handleRegistered}
+        onLoggedIn={handleLoggedIn}
+      />
 
       {/* Hero Section */}
       <section className={styles.hero}>
@@ -369,22 +414,6 @@ export default function Home() {
           </>
         )}
       </main>
-
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className={styles.mobileMenu}>
-          <div className={styles.menuHeader}>
-            <div className={styles.profilePic}>KZ</div>
-            <button onClick={() => setMenuOpen(false)}>×</button>
-          </div>
-          <nav className={styles.menuNav}>
-            <a href="/profile">Profile</a>
-            <a href="/favorites">Favorites</a>
-            <a href="/settings">Settings</a>
-            <a href="/login">Logout</a>
-          </nav>
-        </div>
-      )}
     </div>
   );
 }
