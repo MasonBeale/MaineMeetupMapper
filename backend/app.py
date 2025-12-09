@@ -15,7 +15,7 @@ app.config["SESSION_COOKIE_SECURE"] = True  # True if running over HTTPS
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")  # update for security
 app.config["MYSQL_HOST"] = "localhost"
 app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = ""
+app.config["MYSQL_PASSWORD"] = "MasonBeale"
 app.config["MYSQL_DB"] = "mmmdb"
 
 mysql = MySQL(app)
@@ -24,22 +24,7 @@ bcrypt = Bcrypt(app)
 # Allow your Next.js origin
 CORS(app, supports_credentials=True, origins=["http://localhost:3001","http://127.0.0.1:3001"])
 
-# Database configuration - UPDATE THESE
-DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'password',  # CHANGE THIS
-    'database': 'mmmdb3'
-}
 
-def get_db_connection():
-    """Create and return a database connection"""
-    try:
-        connection = mysql.connector.connect(**DB_CONFIG)
-        return connection
-    except Error as e:
-        print(f"Error connecting to MySQL: {e}")
-        return None
 
 @app.route("/api/events", methods=['GET'])
 def get_events():
@@ -54,11 +39,7 @@ def get_events():
         limit = request.args.get('limit', 100, type=int)
         offset = request.args.get('offset', 0, type=int)
         
-        connection = get_db_connection()
-        if not connection:
-            return jsonify({"error": "Database connection failed"}), 500
-        
-        cursor = connection.cursor(dictionary=True)
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         
         # Build query
         query = """
@@ -183,7 +164,6 @@ def get_events():
             formatted_events.append(formatted_event)
         
         cursor.close()
-        connection.close()
         
         return jsonify({
             'events': formatted_events,
@@ -192,7 +172,7 @@ def get_events():
             'offset': offset
         })
     
-    except Error as e:
+    except Exception as e:
         print(f"Database error: {e}")
         return jsonify({"error": str(e)}), 500
 
@@ -200,11 +180,7 @@ def get_events():
 def get_event_detail(event_id):
     """Get detailed information about a specific event"""
     try:
-        connection = get_db_connection()
-        if not connection:
-            return jsonify({"error": "Database connection failed"}), 500
-        
-        cursor = connection.cursor(dictionary=True)
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         
         # Get event details with correct column names
         query = """
@@ -290,11 +266,10 @@ def get_event_detail(event_id):
         }
         
         cursor.close()
-        connection.close()
         
         return jsonify(formatted_event)
     
-    except Error as e:
+    except Exception as e:
         print(f"Database error: {e}")
         return jsonify({"error": str(e)}), 500
 
@@ -302,20 +277,15 @@ def get_event_detail(event_id):
 def get_categories():
     """Get all event categories"""
     try:
-        connection = get_db_connection()
-        if not connection:
-            return jsonify({"error": "Database connection failed"}), 500
-        
-        cursor = connection.cursor(dictionary=True)
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute("SELECT * FROM category")
         categories = cursor.fetchall()
         
         cursor.close()
-        connection.close()
         
         return jsonify(categories)
     
-    except Error as e:
+    except Exception as e:
         print(f"Database error: {e}")
         return jsonify({"error": str(e)}), 500
 

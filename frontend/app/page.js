@@ -2,13 +2,9 @@
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import Header from "./components/Header";
 import styles from "./page.module.css";
 import { apiMe, apiLogout } from "./lib/api";
-import { useRouter } from "next/navigation";
 
 
 export default function Home() {
@@ -23,14 +19,12 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   
   // Infinite scroll state
   const [displayCount, setDisplayCount] = useState(20);
   const [hasMore, setHasMore] = useState(true);
   const observerTarget = useRef(null);
-  const router = useRouter();
 
   useEffect(() => {
     async function fetchUser() {
@@ -145,38 +139,15 @@ export default function Home() {
 
   return (
     <div className={styles.page}>
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.logo}>MaineMeetupMapper</div>
-        <div className={styles.headerRight}>
-          <button 
-            className={styles.filterToggle}
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            {showFilters ? "Hide Filters" : "Show Filters"}
-          </button>
-          <div className={styles.userSection}>
-            <div className={styles.profilePic}>KZ</div>
-            <button 
-              className={styles.hamburger}
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
-          </div>
-        </div>
-      </header>
       <Header 
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        filter={filter}
-        onFilterChange={setFilter}
         userName={user ? user.username : null}
         onLogout={handleLogout}
         onRegistered={handleRegistered}
         onLoggedIn={handleLoggedIn}
+        showFilters={showFilters}
+        onShowFiltersChange={setShowFilters}
       />
 
       {/* Hero Section */}
