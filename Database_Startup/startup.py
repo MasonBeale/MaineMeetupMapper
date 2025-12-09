@@ -205,6 +205,7 @@ def setup_database():
         table_dir / 'location_table.sql',
         table_dir / 'User_Table.sql',
         table_dir / 'event_table.sql',
+        table_dir / 'User_fav_table.sql',
         table_dir / 'Category_Table.sql',
         table_dir / 'review_table.sql',
         table_dir / 'RSVP_table.sql',
