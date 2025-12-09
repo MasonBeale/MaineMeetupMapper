@@ -223,4 +223,60 @@ def delete_me():
     session.clear()
     return jsonify({"message": "Account deleted"}), 200
 
+@app.route("/api/favorites", methods=["GET"])
+def get_favorites():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"events": []}), 200
 
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        """
+        SELECT
+        e.event_id      AS id,
+        e.event_name    AS name,
+        e.event_date    AS date,
+        e.description   AS description,
+        e.location_id   AS location_id
+        FROM UserFavoriteEvent ufe
+        JOIN Event e ON ufe.event_id = e.event_id
+        WHERE ufe.user_id = %s
+        ORDER BY ufe.favorited_at DESC
+        """,
+        (user_id,),
+    )
+    events = cursor.fetchall()
+    cursor.close()
+    return jsonify({"events": events}), 200
+
+
+@app.route("/api/favorites/<int:event_id>", methods=["POST"])
+def add_favorite(event_id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        "INSERT IGNORE INTO UserFavoriteEvent (user_id, event_id) VALUES (%s, %s)",
+        (user_id, event_id),
+    )
+    mysql.connection.commit()
+    cursor.close()
+    return jsonify({"message": "Favorited"}), 200
+
+
+@app.route("/api/favorites/<int:event_id>", methods=["DELETE"])
+def remove_favorite(event_id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        "DELETE FROM UserFavoriteEvent WHERE user_id = %s AND event_id = %s",
+        (user_id, event_id),
+    )
+    mysql.connection.commit()
+    cursor.close()
+    return jsonify({"message": "Unfavorited"}), 200

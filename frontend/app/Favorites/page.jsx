@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import styles from "../page.module.css";
-import { apiMe, apiLogout } from "../lib/api";
+import { apiMe, apiLogout, apiGetFavorites } from "../lib/api";
 
 export default function FavoritesPage() {
   const [user, setUser] = useState(null);
   const [favorites, setFavorites] = useState([]);
-  const [rsvps, setRsvps] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingFavorites, setLoadingFavorites] = useState(true);
   const [error, setError] = useState(null);
+  const router = useRouter();
 
-  // Load current user
   useEffect(() => {
     async function fetchUser() {
       const me = await apiMe();
@@ -21,44 +21,38 @@ export default function FavoritesPage() {
     fetchUser();
   }, []);
 
-  // Load favorites + RSVPs
   useEffect(() => {
-    async function fetchData() {
+    async function fetchFavorites() {
       try {
-        setLoading(true);
+        setLoadingFavorites(true);
         setError(null);
 
-        const [favRes, rsvpRes] = await Promise.all([
-          fetch("http://127.0.0.1:5000/api/favorites", {
-            credentials: "include",
-          }),
-          fetch("http://127.0.0.1:5000/api/rsvps", {
-            credentials: "include",
-          }),
-        ]);
+        const me = await apiMe();
+        setUser(me);
 
-        if (!favRes.ok || !rsvpRes.ok) {
-          throw new Error("Failed to load favorites or RSVPs");
+        if (!me) {
+          setFavorites([]);
+          return;
         }
 
-        const favData = await favRes.json();
-        const rsvpData = await rsvpRes.json();
-
-        setFavorites(Array.isArray(favData) ? favData : favData.events || []);
-        setRsvps(Array.isArray(rsvpData) ? rsvpData : rsvpData.events || []);
+        const favEvents = await apiGetFavorites();
+        console.log("FavoritesPage favEvents:", favEvents);
+        setFavorites(Array.isArray(favEvents) ? favEvents : []);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load data");
+        setError(
+          e instanceof Error ? e.message : "Failed to load favorites"
+        );
       } finally {
-        setLoading(false);
+        setLoadingFavorites(false);
       }
     }
-
-    fetchData();
+    fetchFavorites();
   }, []);
 
   async function handleLogout() {
     await apiLogout();
     setUser(null);
+    router.push("/");
   }
 
   function handleRegistered(newUser) {
@@ -69,29 +63,44 @@ export default function FavoritesPage() {
     setUser(existingUser);
   }
 
-  const renderEventCard = (event) => (
-    <div key={event.id} className={styles.eventCard}>
-      <div className={styles.eventImage}>
-        <div className={styles.eventGradient}></div>
-        <div className={styles.eventTime}>
-          {new Date(event.date).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+  const renderEventCard = (event) => {
+    const eventId = event.id ?? event.event_id;
+    const name = event.name ?? event.event_name;
+    const dateStr = event.date ?? event.event_date;
+
+    return (
+      <div key={eventId} className={styles.eventCard}>
+        <div className={styles.eventImage}>
+          <div className={styles.eventGradient}></div>
+          <div className={styles.eventTime}>
+            {dateStr &&
+              new Date(dateStr).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+          </div>
+        </div>
+        <div className={styles.eventContent}>
+          <div className={styles.eventMeta}>
+            <span>
+              {event.location ??
+                event.location_name ??
+                `Location ${event.location_id ?? ""}`}
+            </span>
+          </div>
+          <h3>{name}</h3>
+          <div className={styles.eventDate}>
+            {dateStr && new Date(dateStr).toLocaleDateString()}
+          </div>
+          {event.description && (
+            <p style={{ marginTop: "0.5rem", opacity: 0.8, fontSize: "0.9rem" }}>
+              {event.description}
+            </p>
+          )}
         </div>
       </div>
-      <div className={styles.eventContent}>
-        <div className={styles.eventMeta}>
-          <div className={styles.eventLocationIcon}>📍</div>
-          <span>{event.location}</span>
-        </div>
-        <h3>{event.name}</h3>
-        <div className={styles.eventDate}>
-          {new Date(event.date).toLocaleDateString()}
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className={styles.page}>
@@ -110,31 +119,17 @@ export default function FavoritesPage() {
         <section className={styles.section}>
           <h2>Favorite Events</h2>
 
-          {loading ? (
+          {loadingFavorites ? (
             <div className={styles.loading}>Loading favorites...</div>
           ) : error ? (
             <div className={styles.error}>Error: {error}</div>
           ) : favorites.length === 0 ? (
-            <div className={styles.noEvents}>You have no favorite events yet.</div>
+            <div className={styles.noEvents}>
+              You have no favorite events yet.
+            </div>
           ) : (
             <div className={styles.eventsGrid}>
               {favorites.map(renderEventCard)}
-            </div>
-          )}
-        </section>
-
-        <section className={styles.section}>
-          <h2>RSVPs</h2>
-
-          {loading ? (
-            <div className={styles.loading}>Loading RSVPs...</div>
-          ) : error ? (
-            <div className={styles.error}>Error: {error}</div>
-          ) : rsvps.length === 0 ? (
-            <div className={styles.noEvents}>You have not RSVPed to any events yet.</div>
-          ) : (
-            <div className={styles.eventsGrid}>
-              {rsvps.map(renderEventCard)}
             </div>
           )}
         </section>
