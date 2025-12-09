@@ -16,7 +16,7 @@ app.config["SESSION_COOKIE_SECURE"] = True  # True if running over HTTPS
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")  # update for security
 app.config["MYSQL_HOST"] = "localhost"
 app.config["MYSQL_USER"] = "root"
-app.config["MYSQL_PASSWORD"] = "MasonBeale"
+app.config["MYSQL_PASSWORD"] = ""
 app.config["MYSQL_DB"] = "mmmdb"
 
 mysql = MySQL(app)
