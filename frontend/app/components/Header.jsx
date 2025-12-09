@@ -14,7 +14,9 @@ const Header = ({
   userName = null,          
   onLogout, 
   onRegistered,
-  onLoggedIn,           
+  onLoggedIn,
+  showFilters = false,
+  onShowFiltersChange,           
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -45,16 +47,13 @@ const Header = ({
             onChange={(e) => onSearchChange?.(e.target.value)}
             className={styles.searchInput}
           />
-          <select 
-            value={filter} 
-            onChange={(e) => onFilterChange?.(e.target.value)}
-            className={styles.filterSelect}
-          >
-            <option value="all">All</option>
-            <option value="today">Today</option>
-            <option value="weekend">Weekend</option>
-          </select>
         </div>
+        <button 
+          className={styles.filterToggle}
+          onClick={() => onShowFiltersChange?.(!showFilters)}
+        >
+          {showFilters ? "Hide Filters" : "Show Filters"}
+        </button>
         <div className={styles.userSection}>
           {/* Header circle: initials if logged in, generic if not */}
           <div className={styles.profilePic}>
@@ -90,13 +89,14 @@ const Header = ({
               {isLoggedIn ? (
                 <>
                   <Link href="/Account" className={styles.navLink}>My Account</Link>
-                  <Link href="/Favorites" className={styles.navLink}>Favorites</Link>
+                  <Link href="/Favorites" className={styles.navLink}>Favorites & RSVPs</Link>
                   <button
                     type="button"
                     onClick={async () => {
                       // Call logout handler if provided
                       if (onLogout) {
                         await onLogout();
+                        router.push("/");
                       }
                       setMenuOpen(false);
                     }}

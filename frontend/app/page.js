@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import Header from "./components/Header";
 import styles from "./page.module.css";
-import { apiMe, apiLogout } from "./lib/api";
+import {
+  apiMe,
+  apiLogout,
+  apiGetFavorites,
+  apiFavorite,
+  apiUnfavorite,
+} from "./lib/api";
 import { useRouter } from "next/navigation";
 
 
@@ -16,32 +18,46 @@ export default function Home() {
   const [events, setEvents] = useState([]);
   const [totalEvents, setTotalEvents] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [favorites, setFavorites] = useState([]); // array of event_ids
+  const [filter, setFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
   const [selectedCity, setSelectedCity] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [sortBy, setSortBy] = useState("date");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   
   // Infinite scroll state
   const [displayCount, setDisplayCount] = useState(20);
   const [hasMore, setHasMore] = useState(true);
   const observerTarget = useRef(null);
-  const router = useRouter();
 
+  // Load user once
   useEffect(() => {
     async function fetchUser() {
-      console.log("Calling apiMe...");
       const me = await apiMe();
-      console.log("apiMe result:", me);
       setUser(me);
     }
     fetchUser();
   }, []);
 
+  // Load user + favorites (event_id list)
+  useEffect(() => {
+    async function fetchUserAndFavorites() {
+      const me = await apiMe();
+      setUser(me);
+      if (me) {
+        const favEvents = await apiGetFavorites();
+        // backend should return [{ event_id, ... }]
+        setFavorites(favEvents.map((e) => e.event_id));
+      } else {
+        setFavorites([]);
+      }
+    }
+    fetchUserAndFavorites();
+  }, []);
 
   // Fetch events from backend with all filters
   useEffect(() => {
@@ -67,8 +83,11 @@ export default function Home() {
         setTotalEvents(data.total);
         setHasMore(data.events.length < data.total);
         setEvents(Array.isArray(data) ? data : data.events || []);
+        
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch events");
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch events"
+        );
       } finally {
         setLoading(false);
       }
@@ -81,6 +100,46 @@ export default function Home() {
     const uniqueCities = [...new Set(events.map(event => event.city))].filter(Boolean);
     return uniqueCities.sort();
   }, [events]);
+  
+  async function handleToggleFavorite(eventId) {
+    if (!user) return; // optionally open login modal
+    const isFav = favorites.includes(eventId);
+    if (isFav) {
+      await apiUnfavorite(eventId);
+      setFavorites((prev) => prev.filter((id) => id !== eventId));
+    } else {
+      await apiFavorite(eventId);
+      setFavorites((prev) => [...prev, eventId]);
+    }
+  }
+
+
+  const filteredEvents = events.filter((event) => {
+    // match backend field names: event_name, event_date
+    const name = event.name ?? event.event_name ?? "";
+    const dateStr = event.date ?? event.event_date;
+
+    const matchesSearch = name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const eventDate = dateStr ? new Date(dateStr) : null;
+    const today = new Date();
+
+    const isToday =
+      eventDate &&
+      eventDate.toDateString() === today.toDateString();
+
+    const isWeekend =
+      eventDate && [0, 6].includes(eventDate.getDay());
+
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "today" && isToday) ||
+      (filter === "weekend" && isWeekend);
+
+    return matchesSearch && matchesFilter;
+  });
 
   // Reset display count when filters change
   useEffect(() => {
@@ -136,47 +195,24 @@ export default function Home() {
   async function handleLogout() {
     await apiLogout();
     setUser(null);
-    router.push("/"); 
+    router.push("/");
   }
 
   function handleLoggedIn(existingUser) {
-    setUser(existingUser);       
+    setUser(existingUser);
   }
 
   return (
     <div className={styles.page}>
-      {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.logo}>MaineMeetupMapper</div>
-        <div className={styles.headerRight}>
-          <button 
-            className={styles.filterToggle}
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            {showFilters ? "Hide Filters" : "Show Filters"}
-          </button>
-          <div className={styles.userSection}>
-            <div className={styles.profilePic}>KZ</div>
-            <button 
-              className={styles.hamburger}
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
-              <span></span>
-              <span></span>
-              <span></span>
-            </button>
-          </div>
-        </div>
-      </header>
-      <Header 
+      <Header
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        filter={filter}
-        onFilterChange={setFilter}
         userName={user ? user.username : null}
         onLogout={handleLogout}
         onRegistered={handleRegistered}
         onLoggedIn={handleLoggedIn}
+        showFilters={showFilters}
+        onShowFiltersChange={setShowFilters}
       />
 
       {/* Hero Section */}
@@ -324,7 +360,7 @@ export default function Home() {
             </div>
           )}
         </div>
-        
+
         {loading ? (
           <div className={styles.loading}>Loading events...</div>
         ) : error ? (

@@ -5,6 +5,7 @@ from flask_cors import CORS
 from backend_analytics import BackendAnalytics
 import MySQLdb.cursors
 import os
+import mysql.connector
 
 app = Flask(__name__)
 #Session
@@ -24,22 +25,91 @@ bcrypt = Bcrypt(app)
 # Allow your Next.js origin
 CORS(app, supports_credentials=True, origins=["http://localhost:3001","http://127.0.0.1:3001"])
 
-# Database configuration - UPDATE THESE
-DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'password',  # CHANGE THIS
-    'database': 'mmmdb3'
-}
 
+# Database connection
 def get_db_connection():
-    """Create and return a database connection"""
-    try:
-        connection = mysql.connector.connect(**DB_CONFIG)
-        return connection
-    except Error as e:
-        print(f"Error connecting to MySQL: {e}")
-        return None
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="Babystom2!",  # MySQL password
+        database="meetup_mapper"
+    )
+
+# ============================================
+# LOCATION ENDPOINTS - Logan
+# ============================================
+
+# GET all locations (with optional zip filter)
+@app.route("/api/locations", methods=["GET"])
+def get_locations():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    zip_code = request.args.get("zip")
+    
+    if zip_code:
+        cursor.execute("SELECT * FROM Location WHERE zip_code = %s", (zip_code,))
+    else:
+        cursor.execute("SELECT * FROM Location")
+    
+    locations = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    return jsonify(locations)
+
+# GET single location by ID
+@app.route("/api/locations/<int:location_id>", methods=["GET"])
+def get_location(location_id):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("SELECT * FROM Location WHERE location_id = %s", (location_id,))
+    location = cursor.fetchone()
+    
+    cursor.close()
+    conn.close()
+    
+    if location:
+        return jsonify(location)
+    else:
+        return jsonify({"error": "Location not found"}), 404
+
+# GET locations by city
+@app.route("/api/locations/city/<city>", methods=["GET"])
+def get_locations_by_city(city):
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("SELECT * FROM Location WHERE city = %s", (city,))
+    locations = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    return jsonify(locations)
+
+# POST new location
+@app.route("/api/locations", methods=["POST"])
+def create_location():
+    data = request.get_json()
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        "INSERT INTO Location (venue_name, address, city, zip_code) VALUES (%s, %s, %s, %s)",
+        (data["venue_name"], data["address"], data["city"], data["zip_code"])
+    )
+    
+    conn.commit()
+    new_id = cursor.lastrowid
+    
+    cursor.close()
+    conn.close()
+    
+    return jsonify({"message": "Location created", "location_id": new_id}), 201
+
 
 @app.route("/api/events", methods=['GET'])
 def get_events():
@@ -54,11 +124,7 @@ def get_events():
         limit = request.args.get('limit', 100, type=int)
         offset = request.args.get('offset', 0, type=int)
         
-        connection = get_db_connection()
-        if not connection:
-            return jsonify({"error": "Database connection failed"}), 500
-        
-        cursor = connection.cursor(dictionary=True)
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         
         # Build query
         query = """
@@ -183,7 +249,6 @@ def get_events():
             formatted_events.append(formatted_event)
         
         cursor.close()
-        connection.close()
         
         return jsonify({
             'events': formatted_events,
@@ -192,7 +257,7 @@ def get_events():
             'offset': offset
         })
     
-    except Error as e:
+    except Exception as e:
         print(f"Database error: {e}")
         return jsonify({"error": str(e)}), 500
 
@@ -200,11 +265,7 @@ def get_events():
 def get_event_detail(event_id):
     """Get detailed information about a specific event"""
     try:
-        connection = get_db_connection()
-        if not connection:
-            return jsonify({"error": "Database connection failed"}), 500
-        
-        cursor = connection.cursor(dictionary=True)
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         
         # Get event details with correct column names
         query = """
@@ -290,11 +351,10 @@ def get_event_detail(event_id):
         }
         
         cursor.close()
-        connection.close()
         
         return jsonify(formatted_event)
     
-    except Error as e:
+    except Exception as e:
         print(f"Database error: {e}")
         return jsonify({"error": str(e)}), 500
 
@@ -302,37 +362,21 @@ def get_event_detail(event_id):
 def get_categories():
     """Get all event categories"""
     try:
-        connection = get_db_connection()
-        if not connection:
-            return jsonify({"error": "Database connection failed"}), 500
-        
-        cursor = connection.cursor(dictionary=True)
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute("SELECT * FROM category")
         categories = cursor.fetchall()
         
         cursor.close()
-        connection.close()
         
         return jsonify(categories)
     
-    except Error as e:
+    except Exception as e:
         print(f"Database error: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/analytics', methods=['GET'])
 def get_analytics():
-    """API endpoint to fetch analytics data"""
-    time_range = request.args.get('range', default='month')
-    
-    # Validate time_range
-    valid_ranges = ['day', 'week', 'month', 'year']
-    if time_range not in valid_ranges:
-        time_range = 'month'
-    
-    # Generate analytics data
-    analytics_data = BackendAnalytics.generate_analytics_data(time_range)
-    
-    return jsonify(analytics_data)
+    return jsonify(BackendAnalytics.get_analytics())
 
 @app.post("/api/register")
 def register():
@@ -514,4 +558,60 @@ def delete_me():
     session.clear()
     return jsonify({"message": "Account deleted"}), 200
 
+@app.route("/api/favorites", methods=["GET"])
+def get_favorites():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"events": []}), 200
 
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        """
+        SELECT
+        e.event_id      AS id,
+        e.event_name    AS name,
+        e.event_date    AS date,
+        e.description   AS description,
+        e.location_id   AS location_id
+        FROM UserFavoriteEvent ufe
+        JOIN Event e ON ufe.event_id = e.event_id
+        WHERE ufe.user_id = %s
+        ORDER BY ufe.favorited_at DESC
+        """,
+        (user_id,),
+    )
+    events = cursor.fetchall()
+    cursor.close()
+    return jsonify({"events": events}), 200
+
+
+@app.route("/api/favorites/<int:event_id>", methods=["POST"])
+def add_favorite(event_id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        "INSERT IGNORE INTO UserFavoriteEvent (user_id, event_id) VALUES (%s, %s)",
+        (user_id, event_id),
+    )
+    mysql.connection.commit()
+    cursor.close()
+    return jsonify({"message": "Favorited"}), 200
+
+
+@app.route("/api/favorites/<int:event_id>", methods=["DELETE"])
+def remove_favorite(event_id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute(
+        "DELETE FROM UserFavoriteEvent WHERE user_id = %s AND event_id = %s",
+        (user_id, event_id),
+    )
+    mysql.connection.commit()
+    cursor.close()
+    return jsonify({"message": "Unfavorited"}), 200

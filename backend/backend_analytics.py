@@ -1,56 +1,89 @@
-import random
+from pathlib import Path
+import configparser
+import MySQLdb
+
 
 class BackendAnalytics:
-    # Mock data generator
-    @staticmethod
-    def generate_analytics_data(time_range):
-        """Generate mock analytics data based on time range"""
-        
-        # Base data structure
-        data = {
-            "totalEvents": random.randint(50, 200),
-            "activeUsers": random.randint(100, 500),
-            "avgAttendance": random.randint(20, 100),
-            "popularLocations": ["Downtown", "Campus", "Westside", "East End", "North Park"],
-            "topCategories": [
-                {"name": "Music & Concerts", "count": random.randint(15, 45)},
-                {"name": "Workshops", "count": random.randint(10, 35)},
-                {"name": "Sports", "count": random.randint(8, 25)},
-                {"name": "Food & Drink", "count": random.randint(12, 30)},
-                {"name": "Tech Talks", "count": random.randint(5, 20)}
-            ],
-            "recentActivity": [
-                {
-                    "text": f"New event created: {random.choice(['Tech Summit', 'Music Festival', 'Workshop'])}",
-                    "time": "2 hours ago"
-                },
-                {
-                    "text": f"{random.randint(10, 50)} users joined {random.choice(['Sports Event', 'Conference'])}",
-                    "time": "5 hours ago"
-                },
-                {
-                    "text": "Monthly report generated",
-                    "time": "1 day ago"
-                },
-                {
-                    "text": "New user signup spike detected",
-                    "time": "2 days ago"
-                }
-            ]
+    
+    def load_config(config_file='config.ini'):
+        config = configparser.ConfigParser()
+        base_dir = Path(__file__).parent
+        possible_paths = [
+            Path(config_file),
+            base_dir / config_file,
+            base_dir.parent / config_file,
+            base_dir.parent / 'Database_Startup' / config_file,
+            Path.cwd() / config_file,
+        ]
+
+        found = None
+        for path in possible_paths:
+            if Path(path).exists():
+                config.read(path)
+                if 'database' in config:
+                    found = path
+                    break
+
+        if not found:
+            raise FileNotFoundError(
+                "Could not find a valid config.ini with a [database] section. "
+                f"Searched: {', '.join(str(p) for p in possible_paths)}"
+            )
+
+        host = config.get('database', 'host', fallback='localhost')
+        user = config.get('database', 'user', fallback='root')
+        password = config.get('database', 'password', fallback=None)
+        database_name = config.get('database', 'database_name', fallback='mmmdb')
+
+        if not password:
+            raise ValueError(
+                "Missing database configuration in config.ini. Ensure 'password' is set under the [database] section."
+            )
+
+        return {
+            'host': host,
+            'user': user,
+            'password': password,
+            'database': database_name
         }
-        
-        # Adjust based on time range
-        if time_range == "day":
-            data["totalEvents"] = random.randint(5, 20)
-            data["activeUsers"] = random.randint(50, 150)
-        elif time_range == "week":
-            data["totalEvents"] = random.randint(20, 50)
-            data["activeUsers"] = random.randint(100, 300)
-        elif time_range == "month":
-            data["totalEvents"] = random.randint(50, 200)
-            data["activeUsers"] = random.randint(200, 500)
-        elif time_range == "year":
-            data["totalEvents"] = random.randint(200, 1000)
-            data["activeUsers"] = random.randint(500, 2000)
-        
-        return data
+
+    @staticmethod
+    def get_analytics():
+        try:
+            config = BackendAnalytics.load_config()
+            connection = MySQLdb.connect(
+                host=config['host'],
+                user=config['user'],
+                passwd=config['password'],
+                db=config['database']
+            )
+            cursor = connection.cursor()
+            
+            # Get total number of users
+            cursor.execute("SELECT COUNT(*) as total_users FROM User")
+            total_users = cursor.fetchone()[0]
+            
+            # Get total number of events
+            cursor.execute("SELECT COUNT(*) as total_events FROM Event")
+            total_events = cursor.fetchone()[0]
+            
+            # Get total number of locations
+            cursor.execute("SELECT COUNT(*) as total_locations FROM Location")
+            total_locations = cursor.fetchone()[0]
+            
+            cursor.close()
+            connection.close()
+            
+            return {
+                'totalUsers': total_users,
+                'totalEvents': total_events,
+                'totalLocations': total_locations
+            }
+        except Exception as e:
+            print(f"Error fetching analytics: {e}")
+            return {
+                'totalUsers': 0,
+                'totalEvents': 0,
+                'totalLocations': 0,
+                'error': str(e)
+            }
