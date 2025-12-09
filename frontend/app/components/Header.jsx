@@ -96,6 +96,7 @@ const Header = ({
                       // Call logout handler if provided
                       if (onLogout) {
                         await onLogout();
+                        router.push("/");
                       }
                       setMenuOpen(false);
                     }}
