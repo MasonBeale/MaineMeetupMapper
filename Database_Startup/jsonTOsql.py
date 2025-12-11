@@ -13,6 +13,47 @@ import sys
 from pathlib import Path
 import argparse
 
+def load_config(config_file='config.ini'):
+    config = configparser.ConfigParser()
+    base_dir = Path(__file__).parent
+    possible_paths = [
+        Path(config_file),
+        base_dir / config_file,
+        base_dir.parent / config_file,
+        Path.cwd() / config_file,
+    ]
+
+    found = None
+    for path in possible_paths:
+        if Path(path).exists():
+            config.read(path)
+            if 'database' in config:
+                found = path
+                break
+
+    if not found:
+        raise FileNotFoundError(
+            "Could not find a valid config.ini with a [database] section. "
+            f"Searched: {', '.join(str(p) for p in possible_paths)}"
+        )
+
+    host = config.get('database', 'host', fallback='localhost')
+    user = config.get('database', 'user', fallback='root')
+    password = config.get('database', 'password', fallback=None)
+    database_name = config.get('database', 'database_name', fallback='mmmdb')
+
+    if not password:
+        raise ValueError(
+            "Missing database configuration in config.ini. Ensure 'password' is set under the [database] section."
+        )
+
+    return {
+        'host': host,
+        'user': user,
+        'password': password,
+        'database': database_name,
+    }
+config = load_config()
 
 def parse_args():
     """Parse command-line arguments for database connection"""
@@ -243,9 +284,9 @@ if __name__ == "__main__":
 
     import_events(
         JSON_FILE,
-        host=args.host,
-        user=args.user,
-        password=args.password,
-        database=args.database,
+        host= config["host"],
+        user= config["user"],
+        password= config["password"],
+        database= config["database"],
         skip_duplicates=SKIP_DUPLICATES
     )
